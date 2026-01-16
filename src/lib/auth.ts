@@ -27,16 +27,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith('/bookmarks');
-      const isOnSettings = nextUrl.pathname.startsWith('/settings');
-      const isProtectedRoute = isOnDashboard || isOnSettings;
-
-      if (isProtectedRoute && !isLoggedIn) {
-        return Response.redirect(new URL('/login', nextUrl));
-      }
-
+    // Note: With database sessions, the authorized callback may not have
+    // access to session data during middleware execution. Route protection
+    // is handled by the dashboard layout instead to avoid redirect loops.
+    authorized() {
+      // Always allow - route protection is handled by layout
       return true;
     },
   },
