@@ -18,50 +18,54 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
-      <div className="mx-auto w-full max-w-sm">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a1628] px-6">
+      <div className="relative mx-auto w-full max-w-[448px]">
         {/* Logo */}
-        <div className="mb-8 text-center">
-          <Link href="/">
-            <h1 className="bg-gradient-to-r from-secondary to-accent bg-clip-text font-heading text-3xl font-bold text-transparent">
+        <div className="mb-16 text-center">
+          <Link href="/" className="inline-block">
+            <span className="font-sans text-2xl font-bold text-[#00d4ff]">
               Clipwise
-            </h1>
+            </span>
           </Link>
-          <p className="mt-2 text-muted">AI 智慧書籤管理平台</p>
         </div>
 
         {/* Login Card */}
-        <div className="rounded-xl border border-border bg-background-alt p-8">
-          <h2 className="mb-2 text-center font-heading text-xl font-semibold text-foreground">
-            歡迎回來
-          </h2>
-          <p className="mb-6 text-center text-sm text-muted">
-            使用 Google 帳號登入，即可開始使用
-          </p>
+        <div className="rounded-2xl border border-[#234567] bg-[rgba(19,35,55,0.95)] p-8 backdrop-blur-[10px]">
+          {/* Header */}
+          <div className="mb-8 space-y-2 text-center">
+            <h1 className="font-heading text-2xl font-bold text-[#e8f0f7]">
+              歡迎使用 Clipwise
+            </h1>
+            <p className="text-base font-light text-[#8892a0]">
+              登入以同步你的書籤
+            </p>
+          </div>
 
           {/* Google Login Button */}
           <LoginButton />
 
           {/* Terms */}
-          <p className="mt-6 text-center text-xs text-muted">
-            登入即表示您同意我們的
-            <Link href="/terms" className="text-secondary hover:underline">
+          <p className="mt-6 text-center text-xs font-light text-[#8892a0]">
+            登入即表示你同意我們的{' '}
+            <Link href="/terms" className="text-[#00d4ff] hover:underline">
               服務條款
             </Link>
-            和
-            <Link href="/privacy" className="text-secondary hover:underline">
+            {' '}與{' '}
+            <Link href="/privacy" className="text-[#00d4ff] hover:underline">
               隱私政策
             </Link>
           </p>
         </div>
 
         {/* Back to home */}
-        <p className="mt-6 text-center text-sm text-muted">
-          還沒準備好？
-          <Link href="/" className="text-secondary hover:underline">
-            返回首頁
+        <div className="mt-5 text-center">
+          <Link
+            href="/"
+            className="text-sm font-light text-[#8892a0] transition-colors hover:text-[#00d4ff]"
+          >
+            ← 返回首頁
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   )

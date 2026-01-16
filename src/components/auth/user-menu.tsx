@@ -23,11 +23,11 @@ export function UserMenu() {
       {/* Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 focus:ring-offset-background"
+        className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-[#00d4ff] focus:ring-offset-2 focus:ring-offset-[#0a1628]"
         data-testid="user-menu-trigger"
       >
         <div
-          className="h-8 w-8 overflow-hidden rounded-full bg-gradient-to-br from-secondary to-accent"
+          className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#00d4ff] to-[#134e4a]"
           data-testid="user-avatar"
         >
           {session.user.image ? (
@@ -38,9 +38,9 @@ export function UserMenu() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm font-medium text-white">
+            <span className="text-sm font-medium text-white">
               {session.user.name?.charAt(0) || 'U'}
-            </div>
+            </span>
           )}
         </div>
       </button>
@@ -56,13 +56,15 @@ export function UserMenu() {
           />
 
           {/* Menu */}
-          <div className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-lg border border-border bg-background-alt shadow-lg">
+          <div className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-xl border border-[#234567] bg-[#132337] shadow-lg">
             {/* User Info */}
-            <div className="border-b border-border px-4 py-3">
-              <p className="text-sm font-medium text-foreground">
+            <div className="border-b border-[#234567] px-4 py-3">
+              <p className="text-sm font-medium text-[#e8f0f7]">
                 {session.user.name}
               </p>
-              <p className="truncate text-xs text-muted">{session.user.email}</p>
+              <p className="truncate text-xs text-[#8892a0]">
+                {session.user.email}
+              </p>
             </div>
 
             {/* Menu Items */}
@@ -71,35 +73,35 @@ export function UserMenu() {
                 href="/settings"
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  'flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground',
-                  'hover:bg-background'
+                  'flex w-full items-center gap-2 px-4 py-2 text-sm text-[#e8f0f7]',
+                  'hover:bg-[rgba(0,212,255,0.1)]'
                 )}
                 role="menuitem"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-4 w-4 text-[#8892a0]" />
                 設定
               </Link>
               <Link
                 href="/profile"
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  'flex w-full items-center gap-2 px-4 py-2 text-sm text-foreground',
-                  'hover:bg-background'
+                  'flex w-full items-center gap-2 px-4 py-2 text-sm text-[#e8f0f7]',
+                  'hover:bg-[rgba(0,212,255,0.1)]'
                 )}
                 role="menuitem"
               >
-                <User className="h-4 w-4" />
+                <User className="h-4 w-4 text-[#8892a0]" />
                 個人資料
               </Link>
             </div>
 
             {/* Logout */}
-            <div className="border-t border-border py-1">
+            <div className="border-t border-[#234567] py-1">
               <button
                 onClick={handleSignOut}
                 className={cn(
-                  'flex w-full items-center gap-2 px-4 py-2 text-sm text-danger',
-                  'hover:bg-background'
+                  'flex w-full items-center gap-2 px-4 py-2 text-sm text-[#ef4444]',
+                  'hover:bg-[rgba(239,68,68,0.1)]'
                 )}
                 role="menuitem"
               >

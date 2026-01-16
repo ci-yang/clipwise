@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
-import { Bookmark, Sparkles, Tag, Search } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 export default async function HomePage() {
   const session = await auth()
@@ -13,127 +11,178 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="min-h-screen bg-[#0a1628]">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+      <header className="sticky top-0 z-50 border-b border-[rgba(35,69,103,0.5)] bg-[rgba(10,22,40,0.8)] backdrop-blur-[6px]">
+        <div className="mx-auto flex h-[60px] max-w-[1152px] items-center justify-center px-6">
           <Link href="/">
-            <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text font-heading text-xl font-bold text-transparent">
-              Clipwise
-            </span>
+            <span className="text-xl font-bold text-[#00d4ff]">Clipwise</span>
           </Link>
-          <Button asChild>
-            <Link href="/login">登入</Link>
-          </Button>
         </div>
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1">
-        <section className="mx-auto max-w-6xl px-4 py-20 text-center">
-          <h1 className="mb-6 font-heading text-4xl font-bold leading-tight text-foreground md:text-5xl lg:text-6xl">
-            AI 智慧書籤管理
-            <br />
-            <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">
-              讓收藏更有價值
-            </span>
-          </h1>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-muted md:text-xl">
-            貼上連結，AI
-            自動產生摘要與標籤。不再遺忘任何有價值的內容，隨時找到你需要的資訊。
-          </p>
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link href="/login">免費開始使用</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-              <Link href="#features">了解更多</Link>
-            </Button>
+      <main>
+        <section className="mx-auto max-w-[896px] px-6 pb-20 pt-32 text-center">
+          {/* Badge */}
+          <div className="mb-10 flex justify-center">
+            <div className="flex items-center gap-2 rounded-full border border-[rgba(0,212,255,0.2)] bg-[rgba(0,212,255,0.1)] px-4 py-2">
+              <span className="h-2 w-2 rounded-full bg-[#00d4ff]" />
+              <span className="text-sm font-light text-[#00d4ff]">
+                AI 驅動的書籤管理
+              </span>
+            </div>
           </div>
-        </section>
 
-        {/* Features Section */}
-        <section id="features" className="border-t border-border bg-background-alt py-20">
-          <div className="mx-auto max-w-6xl px-4">
-            <h2 className="mb-12 text-center font-heading text-3xl font-bold text-foreground">
-              強大功能，簡單易用
-            </h2>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-              {/* Feature 1 */}
-              <div className="rounded-xl border border-border bg-background p-6 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary/10">
-                  <Bookmark className="h-6 w-6 text-secondary" />
+          {/* Heading */}
+          <h1 className="mb-6 text-5xl font-bold leading-tight text-[#e8f0f7] md:text-6xl">
+            零整理成本的
+            <br />
+            <span className="text-[#00d4ff]">智慧書籤</span>管理
+          </h1>
+
+          {/* Subtitle */}
+          <p className="mx-auto mb-10 max-w-xl text-lg font-light leading-relaxed text-[#8892a0] md:text-xl">
+            貼上連結，AI 自動產生摘要和標籤。
+            <br />
+            隨時搜尋，隨時找回你收藏的每一個網頁。
+          </p>
+
+          {/* CTA Button */}
+          <Link
+            href="/login"
+            className="inline-block rounded-xl bg-[#00d4ff] px-8 py-4 text-lg font-bold text-[#0a1628] transition-colors hover:bg-[#00b8d9]"
+          >
+            免費開始使用
+          </Link>
+
+          {/* Feature Preview Card */}
+          <div className="mx-auto mt-20 max-w-[672px] overflow-hidden rounded-2xl border border-[#234567] bg-[rgba(19,35,55,0.8)] shadow-[0px_25px_50px_-12px_rgba(0,212,255,0.05)] backdrop-blur-[6px]">
+            {/* Input Preview */}
+            <div className="flex items-center gap-4 border-b border-[#234567] px-6 py-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[rgba(0,212,255,0.2)]">
+                <svg
+                  className="h-5 w-5 text-[#00d4ff]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  />
+                </svg>
+              </div>
+              <span className="text-base font-light text-[#e8f0f7]">
+                貼上連結，開始收藏...
+              </span>
+            </div>
+
+            {/* Feature Icons */}
+            <div className="grid grid-cols-3 gap-6 px-6 py-6">
+              {/* AI Summary */}
+              <div className="text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(168,85,247,0.2)]">
+                  <span className="text-2xl">⚡</span>
                 </div>
-                <h3 className="mb-2 font-heading text-lg font-semibold text-foreground">
-                  一鍵保存
-                </h3>
-                <p className="text-sm text-muted">
-                  貼上網址即可保存，自動抓取標題和縮圖
+                <p className="text-sm font-medium text-[#e8f0f7]">AI 摘要</p>
+                <p className="mt-1 text-xs font-light text-[#8892a0]">
+                  自動產生重點摘要
                 </p>
               </div>
 
-              {/* Feature 2 */}
-              <div className="rounded-xl border border-border bg-background p-6 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary/10">
-                  <Sparkles className="h-6 w-6 text-secondary" />
+              {/* Smart Tags */}
+              <div className="text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(59,130,246,0.2)]">
+                  <span className="text-2xl">🏷️</span>
                 </div>
-                <h3 className="mb-2 font-heading text-lg font-semibold text-foreground">
-                  AI 摘要
-                </h3>
-                <p className="text-sm text-muted">
-                  智慧分析內容，自動產生精簡摘要
+                <p className="text-sm font-medium text-[#e8f0f7]">智慧標籤</p>
+                <p className="mt-1 text-xs font-light text-[#8892a0]">
+                  AI 自動分類標籤
                 </p>
               </div>
 
-              {/* Feature 3 */}
-              <div className="rounded-xl border border-border bg-background p-6 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary/10">
-                  <Tag className="h-6 w-6 text-secondary" />
+              {/* Full-text Search */}
+              <div className="text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(34,197,94,0.2)]">
+                  <span className="text-2xl">🔍</span>
                 </div>
-                <h3 className="mb-2 font-heading text-lg font-semibold text-foreground">
-                  智慧標籤
-                </h3>
-                <p className="text-sm text-muted">
-                  AI 自動分類，輕鬆管理書籤
-                </p>
-              </div>
-
-              {/* Feature 4 */}
-              <div className="rounded-xl border border-border bg-background p-6 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary/10">
-                  <Search className="h-6 w-6 text-secondary" />
-                </div>
-                <h3 className="mb-2 font-heading text-lg font-semibold text-foreground">
-                  全文搜尋
-                </h3>
-                <p className="text-sm text-muted">
-                  快速找到任何書籤，支援標題和內容搜尋
+                <p className="text-sm font-medium text-[#e8f0f7]">全文搜尋</p>
+                <p className="mt-1 text-xs font-light text-[#8892a0]">
+                  快速找到任何書籤
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20">
-          <div className="mx-auto max-w-6xl px-4 text-center">
-            <h2 className="mb-4 font-heading text-3xl font-bold text-foreground">
-              準備好開始了嗎？
-            </h2>
-            <p className="mb-8 text-lg text-muted">
-              免費註冊，立即體驗 AI 智慧書籤管理
-            </p>
-            <Button asChild size="lg">
-              <Link href="/login">免費開始使用</Link>
-            </Button>
+        {/* Features Section */}
+        <section className="border-t border-[rgba(35,69,103,0.5)] py-20">
+          <div className="mx-auto max-w-[1152px] px-6">
+            {/* Section Header */}
+            <div className="mb-16 text-center">
+              <h2 className="mb-4 font-heading text-4xl font-bold text-[#e8f0f7]">
+                為什麼選擇 Clipwise？
+              </h2>
+              <p className="text-lg font-light text-[#8892a0]">
+                告別混亂的書籤列表，擁抱智慧整理
+              </p>
+            </div>
+
+            {/* Feature Cards */}
+            <div className="grid gap-8 md:grid-cols-3">
+              {/* Feature 1 */}
+              <div className="rounded-2xl border border-[#234567] bg-[#132337] p-8">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[rgba(0,212,255,0.2)]">
+                  <span className="text-3xl">📋</span>
+                </div>
+                <h3 className="mb-2 text-xl font-bold text-[#e8f0f7]">
+                  一鍵保存
+                </h3>
+                <p className="font-light leading-relaxed text-[#8892a0]">
+                  只需貼上連結，系統自動抓取標題、縮圖和內容。無需手動整理。
+                </p>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="rounded-2xl border border-[#234567] bg-[#132337] p-8">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[rgba(168,85,247,0.2)]">
+                  <span className="text-3xl">🤖</span>
+                </div>
+                <h3 className="mb-2 text-xl font-bold text-[#e8f0f7]">
+                  AI 自動整理
+                </h3>
+                <p className="font-light leading-relaxed text-[#8892a0]">
+                  AI 自動產生摘要和標籤，讓你的書籤井然有序，無需人工分類。
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="rounded-2xl border border-[#234567] bg-[#132337] p-8">
+                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[rgba(34,197,94,0.2)]">
+                  <span className="text-3xl">⚡</span>
+                </div>
+                <h3 className="mb-2 text-xl font-bold text-[#e8f0f7]">
+                  快速搜尋
+                </h3>
+                <p className="font-light leading-relaxed text-[#8892a0]">
+                  全文搜尋功能讓你在毫秒之間找到任何書籤，支援標題、摘要和標籤。
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8">
-        <div className="mx-auto max-w-6xl px-4 text-center text-sm text-muted">
-          <p>&copy; 2026 Clipwise. All rights reserved.</p>
+      <footer className="border-t border-[rgba(35,69,103,0.5)] py-12">
+        <div className="mx-auto flex max-w-[1152px] items-center justify-between px-6">
+          <span className="text-xl font-bold text-[#00d4ff]">Clipwise</span>
+          <span className="text-sm text-[#8892a0]">
+            © 2026 Clipwise. All rights reserved.
+          </span>
         </div>
       </footer>
     </div>
