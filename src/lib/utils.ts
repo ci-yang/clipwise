@@ -1,11 +1,11 @@
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 /**
  * Tailwind CSS class merge utility
  */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /**
@@ -19,29 +19,29 @@ export function formatDate(
     day: 'numeric',
   }
 ): string {
-  const d = typeof date === 'string' ? new Date(date) : date
-  return d.toLocaleDateString('zh-TW', options)
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('zh-TW', options);
 }
 
 /**
  * Format relative time (e.g., "3 days ago")
  */
 export function formatRelativeTime(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date
-  const now = new Date()
-  const diffMs = now.getTime() - d.getTime()
-  const diffSecs = Math.floor(diffMs / 1000)
-  const diffMins = Math.floor(diffSecs / 60)
-  const diffHours = Math.floor(diffMins / 60)
-  const diffDays = Math.floor(diffHours / 24)
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
 
-  if (diffSecs < 60) return '剛剛'
-  if (diffMins < 60) return `${diffMins} 分鐘前`
-  if (diffHours < 24) return `${diffHours} 小時前`
-  if (diffDays < 7) return `${diffDays} 天前`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} 週前`
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} 個月前`
-  return `${Math.floor(diffDays / 365)} 年前`
+  if (diffSecs < 60) return '剛剛';
+  if (diffMins < 60) return `${diffMins} 分鐘前`;
+  if (diffHours < 24) return `${diffHours} 小時前`;
+  if (diffDays < 7) return `${diffDays} 天前`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} 週前`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} 個月前`;
+  return `${Math.floor(diffDays / 365)} 年前`;
 }
 
 /**
@@ -49,10 +49,10 @@ export function formatRelativeTime(date: Date | string): string {
  */
 export function extractDomain(url: string): string {
   try {
-    const parsed = new URL(url)
-    return parsed.hostname.replace(/^www\./, '')
+    const parsed = new URL(url);
+    return parsed.hostname.replace(/^www\./, '');
   } catch {
-    return ''
+    return '';
   }
 }
 
@@ -60,15 +60,15 @@ export function extractDomain(url: string): string {
  * Truncate text to specified length
  */
 export function truncate(text: string, length: number): string {
-  if (text.length <= length) return text
-  return text.slice(0, length).trim() + '...'
+  if (text.length <= length) return text;
+  return text.slice(0, length).trim() + '...';
 }
 
 /**
  * Sleep utility for async operations
  */
 export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -88,6 +88,6 @@ export function generateRandomColor(): string {
     '#8B5CF6', // violet
     '#A855F7', // purple
     '#EC4899', // pink
-  ]
-  return colors[Math.floor(Math.random() * colors.length)] as string
+  ];
+  return colors[Math.floor(Math.random() * colors.length)] as string;
 }

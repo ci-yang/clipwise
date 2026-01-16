@@ -4,20 +4,20 @@
 
 export function BookmarkCardSkeleton() {
   return (
-    <div className="h-[178px] animate-pulse rounded-2xl border border-border bg-card">
+    <div className="border-border bg-card h-[178px] animate-pulse rounded-2xl border">
       {/* Thumbnail skeleton */}
-      <div className="h-16 rounded-t-2xl bg-muted" />
+      <div className="bg-muted h-16 rounded-t-2xl" />
       {/* Content skeleton */}
       <div className="p-4">
-        <div className="mb-2 h-4 w-3/4 rounded bg-muted" />
-        <div className="mb-3 h-3 w-1/4 rounded bg-muted" />
+        <div className="bg-muted mb-2 h-4 w-3/4 rounded" />
+        <div className="bg-muted mb-3 h-3 w-1/4 rounded" />
         <div className="flex gap-2">
-          <div className="h-5 w-12 rounded-lg bg-muted" />
-          <div className="h-5 w-16 rounded-lg bg-muted" />
+          <div className="bg-muted h-5 w-12 rounded-lg" />
+          <div className="bg-muted h-5 w-16 rounded-lg" />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function BookmarkGridSkeleton({ count = 6 }: { count?: number }) {
@@ -27,5 +27,5 @@ export function BookmarkGridSkeleton({ count = 6 }: { count?: number }) {
         <BookmarkCardSkeleton key={i} />
       ))}
     </div>
-  )
+  );
 }

@@ -3,7 +3,7 @@
  * 驗證 URL 並防止 SSRF 攻擊
  */
 
-import { ErrorCodes, type UrlValidationResult } from '@/types'
+import { ErrorCodes, type UrlValidationResult } from '@/types';
 
 // Private/Reserved IP ranges that should be blocked
 const PRIVATE_IP_RANGES = [
@@ -31,42 +31,42 @@ const PRIVATE_IP_RANGES = [
   // IPv6 unique local
   /^fc00:/i,
   /^fd00:/i,
-]
+];
 
 // Cloud metadata endpoints to block
 const METADATA_HOSTS = [
   'metadata.google.internal',
   '169.254.169.254', // AWS/GCP/Azure metadata
   'metadata.internal',
-]
+];
 
 // Allowed protocols
-const ALLOWED_PROTOCOLS = ['http:', 'https:']
+const ALLOWED_PROTOCOLS = ['http:', 'https:'];
 
 // Maximum URL length
-const MAX_URL_LENGTH = 2048
+const MAX_URL_LENGTH = 2048;
 
 /**
  * Check if a string is a valid URL format
  */
 export function isValidUrl(url: string): boolean {
   if (!url || typeof url !== 'string' || !url.trim()) {
-    return false
+    return false;
   }
 
   try {
-    const parsed = new URL(url)
+    const parsed = new URL(url);
     // Must be HTTP or HTTPS
     if (!ALLOWED_PROTOCOLS.includes(parsed.protocol)) {
-      return false
+      return false;
     }
     // Must have a valid hostname
     if (!parsed.hostname) {
-      return false
+      return false;
     }
-    return true
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -74,31 +74,31 @@ export function isValidUrl(url: string): boolean {
  * Check if an IP or hostname is private/reserved
  */
 export function isPrivateIp(hostOrIp: string): boolean {
-  const normalized = hostOrIp.toLowerCase()
+  const normalized = hostOrIp.toLowerCase();
 
   // Check localhost
   if (normalized === 'localhost') {
-    return true
+    return true;
   }
 
   // Check against private IP patterns
-  return PRIVATE_IP_RANGES.some((pattern) => pattern.test(hostOrIp))
+  return PRIVATE_IP_RANGES.some((pattern) => pattern.test(hostOrIp));
 }
 
 /**
  * Check if hostname matches a private/internal pattern
  */
 function isInternalHost(hostname: string): boolean {
-  const lower = hostname.toLowerCase()
+  const lower = hostname.toLowerCase();
 
   // Check cloud metadata endpoints
   if (METADATA_HOSTS.includes(lower)) {
-    return true
+    return true;
   }
 
   // Check for private IP
   if (isPrivateIp(hostname)) {
-    return true
+    return true;
   }
 
   // Block internal-looking hostnames
@@ -110,9 +110,9 @@ function isInternalHost(hostname: string): boolean {
     /\.internal$/i,
     /\.corp$/i,
     /\.home$/i,
-  ]
+  ];
 
-  return internalPatterns.some((pattern) => pattern.test(hostname))
+  return internalPatterns.some((pattern) => pattern.test(hostname));
 }
 
 /**
@@ -125,18 +125,18 @@ export function validateUrl(url: string): UrlValidationResult {
       valid: false,
       error: 'URL 長度超過限制',
       errorCode: ErrorCodes.VALIDATION_ERROR,
-    }
+    };
   }
 
-  let parsed: URL
+  let parsed: URL;
   try {
-    parsed = new URL(url)
+    parsed = new URL(url);
   } catch {
     return {
       valid: false,
       error: 'Invalid URL format',
       errorCode: ErrorCodes.INVALID_URL,
-    }
+    };
   }
 
   // Check protocol
@@ -145,7 +145,7 @@ export function validateUrl(url: string): UrlValidationResult {
       valid: false,
       error: 'Only HTTP and HTTPS protocols are allowed',
       errorCode: ErrorCodes.INVALID_URL,
-    }
+    };
   }
 
   // Check for empty hostname
@@ -154,19 +154,16 @@ export function validateUrl(url: string): UrlValidationResult {
       valid: false,
       error: '無效的主機名稱',
       errorCode: ErrorCodes.INVALID_URL,
-    }
+    };
   }
 
   // Check for localhost specifically
-  if (
-    parsed.hostname.toLowerCase() === 'localhost' ||
-    /^127\./.test(parsed.hostname)
-  ) {
+  if (parsed.hostname.toLowerCase() === 'localhost' || /^127\./.test(parsed.hostname)) {
     return {
       valid: false,
       error: 'URL points to localhost',
       errorCode: ErrorCodes.INVALID_URL,
-    }
+    };
   }
 
   // SSRF protection - check for private/internal hosts
@@ -175,7 +172,7 @@ export function validateUrl(url: string): UrlValidationResult {
       valid: false,
       error: 'URL points to a private IP address',
       errorCode: ErrorCodes.INVALID_URL,
-    }
+    };
   }
 
   // Check for authentication in URL (potential security issue)
@@ -184,10 +181,10 @@ export function validateUrl(url: string): UrlValidationResult {
       valid: false,
       error: 'URL should not contain authentication info',
       errorCode: ErrorCodes.INVALID_URL,
-    }
+    };
   }
 
-  return { valid: true }
+  return { valid: true };
 }
 
 /**
@@ -195,10 +192,10 @@ export function validateUrl(url: string): UrlValidationResult {
  */
 export function normalizeUrl(url: string): string {
   try {
-    const parsed = new URL(url)
+    const parsed = new URL(url);
 
     // Lowercase protocol and hostname
-    let normalized = `${parsed.protocol.toLowerCase()}//${parsed.hostname.toLowerCase()}`
+    let normalized = `${parsed.protocol.toLowerCase()}//${parsed.hostname.toLowerCase()}`;
 
     // Remove default ports
     if (
@@ -207,35 +204,33 @@ export function normalizeUrl(url: string): string {
     ) {
       // Don't include port
     } else if (parsed.port) {
-      normalized += `:${parsed.port}`
+      normalized += `:${parsed.port}`;
     }
 
     // Add pathname (preserve case for path)
-    let pathname = parsed.pathname
+    let pathname = parsed.pathname;
     // Remove trailing slash (including root slash for base URLs)
     if (pathname === '/') {
-      pathname = ''
+      pathname = '';
     } else if (pathname.endsWith('/')) {
-      pathname = pathname.slice(0, -1)
+      pathname = pathname.slice(0, -1);
     }
-    normalized += pathname
+    normalized += pathname;
 
     // Sort and add query parameters
     if (parsed.searchParams.toString()) {
       const sortedParams = new URLSearchParams(
-        [...parsed.searchParams.entries()].sort((a, b) =>
-          a[0].localeCompare(b[0])
-        )
-      )
-      normalized += `?${sortedParams.toString()}`
+        [...parsed.searchParams.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+      );
+      normalized += `?${sortedParams.toString()}`;
     }
 
     // Remove fragment (hash)
     // Fragment is not included
 
-    return normalized
+    return normalized;
   } catch {
-    return url
+    return url;
   }
 }
 
@@ -244,15 +239,15 @@ export function normalizeUrl(url: string): string {
  */
 export function sanitizeUrl(url: string): string {
   try {
-    const parsed = new URL(url)
+    const parsed = new URL(url);
     // Remove fragment
-    parsed.hash = ''
+    parsed.hash = '';
     // Remove auth
-    parsed.username = ''
-    parsed.password = ''
-    return parsed.toString()
+    parsed.username = '';
+    parsed.password = '';
+    return parsed.toString();
   } catch {
-    return url
+    return url;
   }
 }
 
@@ -260,7 +255,7 @@ export function sanitizeUrl(url: string): string {
  * Check if URL has too many redirects
  */
 export function checkRedirectCount(count: number, maxRedirects = 3): boolean {
-  return count <= maxRedirects
+  return count <= maxRedirects;
 }
 
 /**
@@ -268,9 +263,9 @@ export function checkRedirectCount(count: number, maxRedirects = 3): boolean {
  */
 export function extractDomain(url: string): string | null {
   try {
-    const parsed = new URL(url)
-    return parsed.hostname
+    const parsed = new URL(url);
+    return parsed.hostname;
   } catch {
-    return null
+    return null;
   }
 }

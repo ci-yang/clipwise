@@ -3,24 +3,20 @@
  * 包含側邊欄和主要內容區域
  */
 
-import { redirect } from 'next/navigation'
-import { auth } from '@/lib/auth'
-import { DashboardSidebar } from '@/components/dashboard/sidebar'
-import { DashboardHeader } from '@/components/dashboard/header'
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
+import { DashboardSidebar } from '@/components/dashboard/sidebar';
+import { DashboardHeader } from '@/components/dashboard/header';
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const session = await auth()
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
 
   if (!session?.user) {
-    redirect('/login')
+    redirect('/login');
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="bg-background flex min-h-screen">
       {/* Sidebar - 256px width */}
       <DashboardSidebar user={session.user} />
 
@@ -33,5 +29,5 @@ export default async function DashboardLayout({
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
     </div>
-  )
+  );
 }

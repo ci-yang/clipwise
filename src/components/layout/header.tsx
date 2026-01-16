@@ -1,23 +1,23 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useSession } from 'next-auth/react'
-import { Search, Menu } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { Search, Menu } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
-  onMenuClick?: () => void
-  className?: string
+  onMenuClick?: () => void;
+  className?: string;
 }
 
 export function Header({ onMenuClick, className }: HeaderProps) {
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-md lg:px-8',
+        'border-border bg-background/80 sticky top-0 z-50 flex h-16 items-center justify-between border-b px-4 backdrop-blur-md lg:px-8',
         className
       )}
     >
@@ -36,7 +36,7 @@ export function Header({ onMenuClick, className }: HeaderProps) {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="bg-gradient-to-r from-secondary to-accent bg-clip-text font-heading text-xl font-bold text-transparent">
+          <span className="from-secondary to-accent font-heading bg-gradient-to-r bg-clip-text text-xl font-bold text-transparent">
             Clipwise
           </span>
         </Link>
@@ -45,11 +45,11 @@ export function Header({ onMenuClick, className }: HeaderProps) {
       {/* Center Section: Search (Desktop) */}
       <div className="hidden flex-1 justify-center px-8 md:flex">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <Search className="text-muted absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <input
             type="search"
             placeholder="搜尋書籤..."
-            className="h-10 w-full rounded-lg border border-border bg-background-alt pl-10 pr-4 text-sm text-foreground placeholder:text-muted focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
+            className="border-border bg-background-alt text-foreground placeholder:text-muted focus:border-secondary focus:ring-secondary h-10 w-full rounded-lg border pr-4 pl-10 text-sm focus:ring-1 focus:outline-none"
           />
         </div>
       </div>
@@ -57,22 +57,15 @@ export function Header({ onMenuClick, className }: HeaderProps) {
       {/* Right Section: User */}
       <div className="flex items-center gap-4">
         {/* Mobile Search Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          aria-label="搜尋"
-        >
+        <Button variant="ghost" size="icon" className="md:hidden" aria-label="搜尋">
           <Search className="h-5 w-5" />
         </Button>
 
         {/* User Avatar */}
         {session?.user && (
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-muted lg:inline">
-              {session.user.name}
-            </span>
-            <div className="h-8 w-8 overflow-hidden rounded-full bg-gradient-to-br from-secondary to-accent">
+            <span className="text-muted hidden text-sm lg:inline">{session.user.name}</span>
+            <div className="from-secondary to-accent h-8 w-8 overflow-hidden rounded-full bg-gradient-to-br">
               {session.user.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -90,5 +83,5 @@ export function Header({ onMenuClick, className }: HeaderProps) {
         )}
       </div>
     </header>
-  )
+  );
 }

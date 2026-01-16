@@ -2,18 +2,18 @@
  * T037: 單元測試 - Meta 抓取
  * 測試網頁 meta 資訊抓取功能
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock fetch
-const mockFetch = vi.fn()
-global.fetch = mockFetch
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
-import { fetchMeta, extractMeta, parseHtml } from '@/lib/meta-fetcher'
+import { fetchMeta, extractMeta, parseHtml } from '@/lib/meta-fetcher';
 
 describe('Meta Fetcher', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   describe('fetchMeta', () => {
     it('should fetch and parse meta information from a URL', async () => {
@@ -30,24 +30,24 @@ describe('Meta Fetcher', () => {
         </head>
         <body>Content</body>
         </html>
-      `
+      `;
 
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/html' }),
         text: () => Promise.resolve(htmlContent),
-      })
+      });
 
       // Act
-      const result = await fetchMeta('https://example.com/article')
+      const result = await fetchMeta('https://example.com/article');
 
       // Assert
-      expect(result.title).toBe('OG Title') // OG title takes precedence
-      expect(result.description).toBe('This is a test article description')
-      expect(result.thumbnail).toBe('https://example.com/og-image.jpg')
-      expect(result.domain).toBe('example.com')
-    })
+      expect(result.title).toBe('OG Title'); // OG title takes precedence
+      expect(result.description).toBe('This is a test article description');
+      expect(result.thumbnail).toBe('https://example.com/og-image.jpg');
+      expect(result.domain).toBe('example.com');
+    });
 
     it('should fall back to regular title when OG title is missing', async () => {
       // Arrange
@@ -59,21 +59,21 @@ describe('Meta Fetcher', () => {
         </head>
         <body>Content</body>
         </html>
-      `
+      `;
 
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/html' }),
         text: () => Promise.resolve(htmlContent),
-      })
+      });
 
       // Act
-      const result = await fetchMeta('https://example.com/page')
+      const result = await fetchMeta('https://example.com/page');
 
       // Assert
-      expect(result.title).toBe('Regular Title')
-    })
+      expect(result.title).toBe('Regular Title');
+    });
 
     it('should handle Twitter card meta tags', async () => {
       // Arrange
@@ -87,34 +87,32 @@ describe('Meta Fetcher', () => {
         </head>
         <body>Content</body>
         </html>
-      `
+      `;
 
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
         headers: new Headers({ 'content-type': 'text/html' }),
         text: () => Promise.resolve(htmlContent),
-      })
+      });
 
       // Act
-      const result = await fetchMeta('https://example.com/tweet')
+      const result = await fetchMeta('https://example.com/tweet');
 
       // Assert
-      expect(result.title).toBe('Twitter Title')
-      expect(result.description).toBe('Twitter Description')
-      expect(result.thumbnail).toBe('https://example.com/twitter-image.jpg')
-    })
+      expect(result.title).toBe('Twitter Title');
+      expect(result.description).toBe('Twitter Description');
+      expect(result.thumbnail).toBe('https://example.com/twitter-image.jpg');
+    });
 
     it('should timeout after 5 seconds', async () => {
       // Arrange - simulate an aborted fetch with AbortError
-      const abortError = new DOMException('The operation was aborted', 'AbortError')
-      mockFetch.mockRejectedValue(abortError)
+      const abortError = new DOMException('The operation was aborted', 'AbortError');
+      mockFetch.mockRejectedValue(abortError);
 
       // Act & Assert
-      await expect(fetchMeta('https://slow-site.com')).rejects.toThrow(
-        /timeout/i
-      )
-    })
+      await expect(fetchMeta('https://slow-site.com')).rejects.toThrow(/timeout/i);
+    });
 
     it('should reject non-HTML content types', async () => {
       // Arrange
@@ -123,13 +121,11 @@ describe('Meta Fetcher', () => {
         status: 200,
         headers: new Headers({ 'content-type': 'application/json' }),
         text: () => Promise.resolve('{}'),
-      })
+      });
 
       // Act & Assert
-      await expect(fetchMeta('https://api.example.com/data')).rejects.toThrow(
-        /content type/i
-      )
-    })
+      await expect(fetchMeta('https://api.example.com/data')).rejects.toThrow(/content type/i);
+    });
 
     it('should handle HTTP errors', async () => {
       // Arrange
@@ -137,13 +133,11 @@ describe('Meta Fetcher', () => {
         ok: false,
         status: 404,
         statusText: 'Not Found',
-      })
+      });
 
       // Act & Assert
-      await expect(
-        fetchMeta('https://example.com/not-found')
-      ).rejects.toThrow(/404/)
-    })
+      await expect(fetchMeta('https://example.com/not-found')).rejects.toThrow(/404/);
+    });
 
     it('should detect cross-host redirects', async () => {
       // Arrange - simulate redirect to different host
@@ -154,19 +148,19 @@ describe('Meta Fetcher', () => {
         url: 'https://other-domain.com/final', // Different host from original
         headers: new Headers({ 'content-type': 'text/html' }),
         text: () => Promise.resolve('<html><head><title>Redirected</title></head></html>'),
-      })
+      });
 
       // Act
-      const result = await fetchMeta('https://example.com/redirect')
+      const result = await fetchMeta('https://example.com/redirect');
 
       // Assert - should still work as long as within redirect limit
-      expect(result.title).toBe('Redirected')
-      expect(result.domain).toBe('other-domain.com')
-    })
+      expect(result.title).toBe('Redirected');
+      expect(result.domain).toBe('other-domain.com');
+    });
 
     it('should enforce 5MB content size limit', async () => {
       // Arrange
-      const largeContent = 'x'.repeat(6 * 1024 * 1024) // 6MB
+      const largeContent = 'x'.repeat(6 * 1024 * 1024); // 6MB
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
@@ -175,14 +169,12 @@ describe('Meta Fetcher', () => {
           'content-length': String(largeContent.length),
         }),
         text: () => Promise.resolve(largeContent),
-      })
+      });
 
       // Act & Assert
-      await expect(fetchMeta('https://example.com/large-page')).rejects.toThrow(
-        /size/i
-      )
-    })
-  })
+      await expect(fetchMeta('https://example.com/large-page')).rejects.toThrow(/size/i);
+    });
+  });
 
   describe('extractMeta', () => {
     it('should extract canonical URL', () => {
@@ -192,18 +184,18 @@ describe('Meta Fetcher', () => {
           <link rel="canonical" href="https://example.com/canonical-url">
         </head>
         </html>
-      `
+      `;
 
-      const meta = extractMeta(html, 'https://example.com/page')
-      expect(meta.canonicalUrl).toBe('https://example.com/canonical-url')
-    })
+      const meta = extractMeta(html, 'https://example.com/page');
+      expect(meta.canonicalUrl).toBe('https://example.com/canonical-url');
+    });
 
     it('should extract language from html lang attribute', () => {
-      const html = `<html lang="zh-TW"><head></head></html>`
+      const html = `<html lang="zh-TW"><head></head></html>`;
 
-      const meta = extractMeta(html, 'https://example.com')
-      expect(meta.language).toBe('zh')
-    })
+      const meta = extractMeta(html, 'https://example.com');
+      expect(meta.language).toBe('zh');
+    });
 
     it('should extract language from meta tag', () => {
       const html = `
@@ -212,11 +204,11 @@ describe('Meta Fetcher', () => {
           <meta http-equiv="content-language" content="en-US">
         </head>
         </html>
-      `
+      `;
 
-      const meta = extractMeta(html, 'https://example.com')
-      expect(meta.language).toBe('en')
-    })
+      const meta = extractMeta(html, 'https://example.com');
+      expect(meta.language).toBe('en');
+    });
 
     it('should resolve relative favicon URLs', () => {
       const html = `
@@ -225,11 +217,11 @@ describe('Meta Fetcher', () => {
           <link rel="icon" href="/favicon.ico">
         </head>
         </html>
-      `
+      `;
 
-      const meta = extractMeta(html, 'https://example.com/page')
-      expect(meta.favicon).toBe('https://example.com/favicon.ico')
-    })
+      const meta = extractMeta(html, 'https://example.com/page');
+      expect(meta.favicon).toBe('https://example.com/favicon.ico');
+    });
 
     it('should resolve relative og:image URLs', () => {
       const html = `
@@ -238,20 +230,20 @@ describe('Meta Fetcher', () => {
           <meta property="og:image" content="/images/og.jpg">
         </head>
         </html>
-      `
+      `;
 
-      const meta = extractMeta(html, 'https://example.com/page')
-      expect(meta.thumbnail).toBe('https://example.com/images/og.jpg')
-    })
+      const meta = extractMeta(html, 'https://example.com/page');
+      expect(meta.thumbnail).toBe('https://example.com/images/og.jpg');
+    });
 
     it('should handle missing meta information gracefully', () => {
-      const html = `<html><head></head><body>Minimal page</body></html>`
+      const html = `<html><head></head><body>Minimal page</body></html>`;
 
-      const meta = extractMeta(html, 'https://example.com')
-      expect(meta.title).toBeNull()
-      expect(meta.description).toBeNull()
-      expect(meta.thumbnail).toBeNull()
-    })
+      const meta = extractMeta(html, 'https://example.com');
+      expect(meta.title).toBeNull();
+      expect(meta.description).toBeNull();
+      expect(meta.thumbnail).toBeNull();
+    });
 
     it('should extract author information', () => {
       const html = `
@@ -260,11 +252,11 @@ describe('Meta Fetcher', () => {
           <meta name="author" content="John Doe">
         </head>
         </html>
-      `
+      `;
 
-      const meta = extractMeta(html, 'https://example.com')
-      expect(meta.author).toBe('John Doe')
-    })
+      const meta = extractMeta(html, 'https://example.com');
+      expect(meta.author).toBe('John Doe');
+    });
 
     it('should extract published date', () => {
       const html = `
@@ -273,12 +265,12 @@ describe('Meta Fetcher', () => {
           <meta property="article:published_time" content="2026-01-15T10:00:00Z">
         </head>
         </html>
-      `
+      `;
 
-      const meta = extractMeta(html, 'https://example.com')
-      expect(meta.publishedAt).toBe('2026-01-15T10:00:00Z')
-    })
-  })
+      const meta = extractMeta(html, 'https://example.com');
+      expect(meta.publishedAt).toBe('2026-01-15T10:00:00Z');
+    });
+  });
 
   describe('parseHtml', () => {
     it('should handle malformed HTML', () => {
@@ -289,15 +281,15 @@ describe('Meta Fetcher', () => {
           <meta name="description" content="Test desc">
         </body>
         </html>
-      `
+      `;
 
       // Should not throw
-      expect(() => parseHtml(malformedHtml)).not.toThrow()
-    })
+      expect(() => parseHtml(malformedHtml)).not.toThrow();
+    });
 
     it('should handle empty HTML', () => {
-      expect(() => parseHtml('')).not.toThrow()
-    })
+      expect(() => parseHtml('')).not.toThrow();
+    });
 
     it('should handle HTML with special characters', () => {
       const html = `
@@ -306,11 +298,11 @@ describe('Meta Fetcher', () => {
           <title>Test &amp; Demo &lt;Special&gt;</title>
         </head>
         </html>
-      `
+      `;
 
-      const doc = parseHtml(html)
-      const title = doc.querySelector('title')?.textContent
-      expect(title).toBe('Test & Demo <Special>')
-    })
-  })
-})
+      const doc = parseHtml(html);
+      const title = doc.querySelector('title')?.textContent;
+      expect(title).toBe('Test & Demo <Special>');
+    });
+  });
+});

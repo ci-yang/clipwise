@@ -1,13 +1,13 @@
-import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { auth } from '@/lib/auth'
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
 
 export default async function HomePage() {
-  const session = await auth()
+  const session = await auth();
 
   // If logged in, redirect to bookmarks
   if (session?.user) {
-    redirect('/bookmarks')
+    redirect('/bookmarks');
   }
 
   return (
@@ -23,26 +23,24 @@ export default async function HomePage() {
 
       {/* Hero Section */}
       <main>
-        <section className="mx-auto max-w-[896px] px-6 pb-20 pt-32 text-center">
+        <section className="mx-auto max-w-[896px] px-6 pt-32 pb-20 text-center">
           {/* Badge */}
           <div className="mb-10 flex justify-center">
             <div className="flex items-center gap-2 rounded-full border border-[rgba(0,212,255,0.2)] bg-[rgba(0,212,255,0.1)] px-4 py-2">
               <span className="h-2 w-2 rounded-full bg-[#00d4ff]" />
-              <span className="text-sm font-light text-[#00d4ff]">
-                AI 驅動的書籤管理
-              </span>
+              <span className="text-sm font-light text-[#00d4ff]">AI 驅動的書籤管理</span>
             </div>
           </div>
 
           {/* Heading */}
-          <h1 className="mb-6 text-5xl font-bold leading-tight text-[#e8f0f7] md:text-6xl">
+          <h1 className="mb-6 text-5xl leading-tight font-bold text-[#e8f0f7] md:text-6xl">
             零整理成本的
             <br />
             <span className="text-[#00d4ff]">智慧書籤</span>管理
           </h1>
 
           {/* Subtitle */}
-          <p className="mx-auto mb-10 max-w-xl text-lg font-light leading-relaxed text-[#8892a0] md:text-xl">
+          <p className="mx-auto mb-10 max-w-xl text-lg leading-relaxed font-light text-[#8892a0] md:text-xl">
             貼上連結，AI 自動產生摘要和標籤。
             <br />
             隨時搜尋，隨時找回你收藏的每一個網頁。
@@ -75,9 +73,7 @@ export default async function HomePage() {
                   />
                 </svg>
               </div>
-              <span className="text-base font-light text-[#e8f0f7]">
-                貼上連結，開始收藏...
-              </span>
+              <span className="text-base font-light text-[#e8f0f7]">貼上連結，開始收藏...</span>
             </div>
 
             {/* Feature Icons */}
@@ -88,9 +84,7 @@ export default async function HomePage() {
                   <span className="text-2xl">⚡</span>
                 </div>
                 <p className="text-sm font-medium text-[#e8f0f7]">AI 摘要</p>
-                <p className="mt-1 text-xs font-light text-[#8892a0]">
-                  自動產生重點摘要
-                </p>
+                <p className="mt-1 text-xs font-light text-[#8892a0]">自動產生重點摘要</p>
               </div>
 
               {/* Smart Tags */}
@@ -99,9 +93,7 @@ export default async function HomePage() {
                   <span className="text-2xl">🏷️</span>
                 </div>
                 <p className="text-sm font-medium text-[#e8f0f7]">智慧標籤</p>
-                <p className="mt-1 text-xs font-light text-[#8892a0]">
-                  AI 自動分類標籤
-                </p>
+                <p className="mt-1 text-xs font-light text-[#8892a0]">AI 自動分類標籤</p>
               </div>
 
               {/* Full-text Search */}
@@ -110,9 +102,7 @@ export default async function HomePage() {
                   <span className="text-2xl">🔍</span>
                 </div>
                 <p className="text-sm font-medium text-[#e8f0f7]">全文搜尋</p>
-                <p className="mt-1 text-xs font-light text-[#8892a0]">
-                  快速找到任何書籤
-                </p>
+                <p className="mt-1 text-xs font-light text-[#8892a0]">快速找到任何書籤</p>
               </div>
             </div>
           </div>
@@ -123,12 +113,10 @@ export default async function HomePage() {
           <div className="mx-auto max-w-[1152px] px-6">
             {/* Section Header */}
             <div className="mb-16 text-center">
-              <h2 className="mb-4 font-heading text-4xl font-bold text-[#e8f0f7]">
+              <h2 className="font-heading mb-4 text-4xl font-bold text-[#e8f0f7]">
                 為什麼選擇 Clipwise？
               </h2>
-              <p className="text-lg font-light text-[#8892a0]">
-                告別混亂的書籤列表，擁抱智慧整理
-              </p>
+              <p className="text-lg font-light text-[#8892a0]">告別混亂的書籤列表，擁抱智慧整理</p>
             </div>
 
             {/* Feature Cards */}
@@ -138,10 +126,8 @@ export default async function HomePage() {
                 <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[rgba(0,212,255,0.2)]">
                   <span className="text-3xl">📋</span>
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-[#e8f0f7]">
-                  一鍵保存
-                </h3>
-                <p className="font-light leading-relaxed text-[#8892a0]">
+                <h3 className="mb-2 text-xl font-bold text-[#e8f0f7]">一鍵保存</h3>
+                <p className="leading-relaxed font-light text-[#8892a0]">
                   只需貼上連結，系統自動抓取標題、縮圖和內容。無需手動整理。
                 </p>
               </div>
@@ -151,10 +137,8 @@ export default async function HomePage() {
                 <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[rgba(168,85,247,0.2)]">
                   <span className="text-3xl">🤖</span>
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-[#e8f0f7]">
-                  AI 自動整理
-                </h3>
-                <p className="font-light leading-relaxed text-[#8892a0]">
+                <h3 className="mb-2 text-xl font-bold text-[#e8f0f7]">AI 自動整理</h3>
+                <p className="leading-relaxed font-light text-[#8892a0]">
                   AI 自動產生摘要和標籤，讓你的書籤井然有序，無需人工分類。
                 </p>
               </div>
@@ -164,10 +148,8 @@ export default async function HomePage() {
                 <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-[rgba(34,197,94,0.2)]">
                   <span className="text-3xl">⚡</span>
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-[#e8f0f7]">
-                  快速搜尋
-                </h3>
-                <p className="font-light leading-relaxed text-[#8892a0]">
+                <h3 className="mb-2 text-xl font-bold text-[#e8f0f7]">快速搜尋</h3>
+                <p className="leading-relaxed font-light text-[#8892a0]">
                   全文搜尋功能讓你在毫秒之間找到任何書籤，支援標題、摘要和標籤。
                 </p>
               </div>
@@ -180,11 +162,9 @@ export default async function HomePage() {
       <footer className="border-t border-[rgba(35,69,103,0.5)] py-12">
         <div className="mx-auto flex max-w-[1152px] items-center justify-between px-6">
           <span className="text-xl font-bold text-[#00d4ff]">Clipwise</span>
-          <span className="text-sm text-[#8892a0]">
-            © 2026 Clipwise. All rights reserved.
-          </span>
+          <span className="text-sm text-[#8892a0]">© 2026 Clipwise. All rights reserved.</span>
         </div>
       </footer>
     </div>
-  )
+  );
 }

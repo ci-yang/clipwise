@@ -3,24 +3,24 @@
  * 自訂錯誤類別，提供結構化的錯誤處理
  */
 
-import { ErrorCodes, type ErrorCode } from '@/types'
+import { ErrorCodes, type ErrorCode } from '@/types';
 
 /**
  * Base API Error class
  */
 export class ApiError extends Error {
-  public readonly code: ErrorCode
-  public readonly statusCode: number
+  public readonly code: ErrorCode;
+  public readonly statusCode: number;
 
   constructor(code: ErrorCode, message: string, statusCode = 500) {
-    super(message)
-    this.name = 'ApiError'
-    this.code = code
-    this.statusCode = statusCode
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.statusCode = statusCode;
 
     // Maintains proper stack trace
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ApiError)
+      Error.captureStackTrace(this, ApiError);
     }
   }
 
@@ -28,7 +28,7 @@ export class ApiError extends Error {
     return {
       code: this.code,
       message: this.message,
-    }
+    };
   }
 }
 
@@ -37,8 +37,8 @@ export class ApiError extends Error {
  */
 export class ValidationError extends ApiError {
   constructor(message: string) {
-    super(ErrorCodes.VALIDATION_ERROR, message, 400)
-    this.name = 'ValidationError'
+    super(ErrorCodes.VALIDATION_ERROR, message, 400);
+    this.name = 'ValidationError';
   }
 }
 
@@ -47,8 +47,8 @@ export class ValidationError extends ApiError {
  */
 export class UnauthorizedError extends ApiError {
   constructor(message = '請先登入') {
-    super(ErrorCodes.UNAUTHORIZED, message, 401)
-    this.name = 'UnauthorizedError'
+    super(ErrorCodes.UNAUTHORIZED, message, 401);
+    this.name = 'UnauthorizedError';
   }
 }
 
@@ -57,8 +57,8 @@ export class UnauthorizedError extends ApiError {
  */
 export class NotFoundError extends ApiError {
   constructor(resource = '資源') {
-    super(ErrorCodes.NOT_FOUND, `找不到指定的${resource}`, 404)
-    this.name = 'NotFoundError'
+    super(ErrorCodes.NOT_FOUND, `找不到指定的${resource}`, 404);
+    this.name = 'NotFoundError';
   }
 }
 
@@ -67,8 +67,8 @@ export class NotFoundError extends ApiError {
  */
 export class InvalidUrlError extends ApiError {
   constructor(message = '不允許存取此網址（安全性限制）') {
-    super(ErrorCodes.INVALID_URL, message, 422)
-    this.name = 'InvalidUrlError'
+    super(ErrorCodes.INVALID_URL, message, 422);
+    this.name = 'InvalidUrlError';
   }
 }
 
@@ -77,12 +77,8 @@ export class InvalidUrlError extends ApiError {
  */
 export class ContentTooLargeError extends ApiError {
   constructor(maxSize = '5MB') {
-    super(
-      ErrorCodes.CONTENT_TOO_LARGE,
-      `網頁內容超過大小限制（${maxSize}）`,
-      413
-    )
-    this.name = 'ContentTooLargeError'
+    super(ErrorCodes.CONTENT_TOO_LARGE, `網頁內容超過大小限制（${maxSize}）`, 413);
+    this.name = 'ContentTooLargeError';
   }
 }
 
@@ -91,8 +87,8 @@ export class ContentTooLargeError extends ApiError {
  */
 export class UnsupportedContentTypeError extends ApiError {
   constructor() {
-    super(ErrorCodes.UNSUPPORTED_CONTENT_TYPE, '僅支援 HTML 網頁', 415)
-    this.name = 'UnsupportedContentTypeError'
+    super(ErrorCodes.UNSUPPORTED_CONTENT_TYPE, '僅支援 HTML 網頁', 415);
+    this.name = 'UnsupportedContentTypeError';
   }
 }
 
@@ -100,19 +96,19 @@ export class UnsupportedContentTypeError extends ApiError {
  * Rate Limit Error - for too many requests
  */
 export class RateLimitError extends ApiError {
-  public readonly retryAfter: number
+  public readonly retryAfter: number;
 
   constructor(retryAfter = 60) {
-    super(ErrorCodes.RATE_LIMITED, '請求過於頻繁，請稍後再試', 429)
-    this.name = 'RateLimitError'
-    this.retryAfter = retryAfter
+    super(ErrorCodes.RATE_LIMITED, '請求過於頻繁，請稍後再試', 429);
+    this.name = 'RateLimitError';
+    this.retryAfter = retryAfter;
   }
 
   toJSON() {
     return {
       ...super.toJSON(),
       retryAfter: this.retryAfter,
-    }
+    };
   }
 }
 
@@ -121,12 +117,8 @@ export class RateLimitError extends ApiError {
  */
 export class AiQuotaExceededError extends ApiError {
   constructor(dailyLimit = 20) {
-    super(
-      ErrorCodes.AI_QUOTA_EXCEEDED,
-      `今日 AI 處理配額已用完（${dailyLimit} 次/日）`,
-      429
-    )
-    this.name = 'AiQuotaExceededError'
+    super(ErrorCodes.AI_QUOTA_EXCEEDED, `今日 AI 處理配額已用完（${dailyLimit} 次/日）`, 429);
+    this.name = 'AiQuotaExceededError';
   }
 }
 
@@ -134,7 +126,7 @@ export class AiQuotaExceededError extends ApiError {
  * Check if error is an ApiError
  */
 export function isApiError(error: unknown): error is ApiError {
-  return error instanceof ApiError
+  return error instanceof ApiError;
 }
 
 /**
@@ -142,16 +134,16 @@ export function isApiError(error: unknown): error is ApiError {
  */
 export function createErrorResponse(error: unknown): Response {
   if (isApiError(error)) {
-    return Response.json(error.toJSON(), { status: error.statusCode })
+    return Response.json(error.toJSON(), { status: error.statusCode });
   }
 
   // Handle unknown errors
-  console.error('Unexpected error:', error)
+  console.error('Unexpected error:', error);
   return Response.json(
     {
       code: ErrorCodes.INTERNAL_ERROR,
       message: '系統發生錯誤，請稍後再試',
     },
     { status: 500 }
-  )
+  );
 }

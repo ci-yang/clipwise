@@ -3,13 +3,13 @@
  * 使用 OpenAI SDK 連接 Zeabur AI Hub 進行 AI 處理
  */
 
-import OpenAI from 'openai'
+import OpenAI from 'openai';
 
 // Initialize OpenAI client configured for Zeabur AI Hub
 const openai = new OpenAI({
   apiKey: process.env.ZEABUR_AI_API_KEY || '',
   baseURL: 'https://llm.zeabur.com/v1',
-})
+});
 
 // AI Model configuration
 const AI_CONFIG = {
@@ -17,12 +17,12 @@ const AI_CONFIG = {
   maxTokens: 500,
   temperature: 0.7,
   timeout: 10000, // 10 seconds
-}
+};
 
 export interface AiSummaryResult {
-  summary: string
-  tags: string[]
-  language: 'zh' | 'en'
+  summary: string;
+  tags: string[];
+  language: 'zh' | 'en';
 }
 
 /**
@@ -32,7 +32,7 @@ export async function generateSummaryAndTags(
   content: string,
   title?: string
 ): Promise<AiSummaryResult> {
-  const prompt = buildPrompt(content, title)
+  const prompt = buildPrompt(content, title);
 
   const response = await openai.chat.completions.create({
     model: AI_CONFIG.model,
@@ -58,26 +58,26 @@ export async function generateSummaryAndTags(
         content: prompt,
       },
     ],
-  })
+  });
 
-  const responseText = response.choices[0]?.message?.content || ''
+  const responseText = response.choices[0]?.message?.content || '';
 
   try {
     // Parse JSON response
-    const parsed = JSON.parse(responseText) as AiSummaryResult
+    const parsed = JSON.parse(responseText) as AiSummaryResult;
     return {
       summary: parsed.summary || '',
       tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
       language: parsed.language === 'en' ? 'en' : 'zh',
-    }
+    };
   } catch {
     // If parsing fails, return empty result
-    console.error('Failed to parse AI response:', responseText)
+    console.error('Failed to parse AI response:', responseText);
     return {
       summary: '',
       tags: [],
       language: 'zh',
-    }
+    };
   }
 }
 
@@ -86,16 +86,14 @@ export async function generateSummaryAndTags(
  */
 function buildPrompt(content: string, title?: string): string {
   // Truncate content to avoid token limits
-  const maxContentLength = 3000
+  const maxContentLength = 3000;
   const truncatedContent =
-    content.length > maxContentLength
-      ? content.slice(0, maxContentLength) + '...'
-      : content
+    content.length > maxContentLength ? content.slice(0, maxContentLength) + '...' : content;
 
   if (title) {
-    return `標題：${title}\n\n內容：${truncatedContent}`
+    return `標題：${title}\n\n內容：${truncatedContent}`;
   }
-  return `內容：${truncatedContent}`
+  return `內容：${truncatedContent}`;
 }
 
 /**
@@ -107,9 +105,7 @@ export function generateFallbackSummary(
 ): string {
   if (description && description.length > 0) {
     // Use meta description if available
-    return description.length > 200
-      ? description.slice(0, 200) + '...'
-      : description
+    return description.length > 200 ? description.slice(0, 200) + '...' : description;
   }
 
   if (content && content.length > 0) {
@@ -117,13 +113,11 @@ export function generateFallbackSummary(
     const cleanContent = content
       .replace(/\s+/g, ' ')
       .replace(/[\n\r]/g, ' ')
-      .trim()
-    return cleanContent.length > 200
-      ? cleanContent.slice(0, 200) + '...'
-      : cleanContent
+      .trim();
+    return cleanContent.length > 200 ? cleanContent.slice(0, 200) + '...' : cleanContent;
   }
 
-  return ''
+  return '';
 }
 
 /**
@@ -131,15 +125,15 @@ export function generateFallbackSummary(
  */
 export async function checkAiServiceHealth(): Promise<boolean> {
   if (!process.env.ZEABUR_AI_API_KEY) {
-    return false
+    return false;
   }
 
   try {
-    const response = await openai.models.list()
-    return response.data.length > 0
+    const response = await openai.models.list();
+    return response.data.length > 0;
   } catch {
-    return false
+    return false;
   }
 }
 
-export { openai, AI_CONFIG }
+export { openai, AI_CONFIG };

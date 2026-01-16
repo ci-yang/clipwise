@@ -1,21 +1,21 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { Loader2 } from 'lucide-react'
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { Loader2 } from 'lucide-react';
 
 export function LoginButton() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await signIn('google', { callbackUrl: '/bookmarks' })
+      await signIn('google', { callbackUrl: '/bookmarks' });
     } catch (error) {
-      console.error('Login error:', error)
-      setIsLoading(false)
+      console.error('Login error:', error);
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <button
@@ -47,5 +47,5 @@ export function LoginButton() {
       )}
       使用 Google 帳號登入
     </button>
-  )
+  );
 }

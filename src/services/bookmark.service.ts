@@ -3,43 +3,43 @@
  * T041: 書籤服務（create, get, update, delete）
  */
 
-import { prisma } from '@/lib/prisma'
-import { fetchMeta } from '@/lib/meta-fetcher'
-import { normalizeUrl, extractDomain } from '@/lib/url-validator'
-import type { Bookmark, AiStatus, Tag, Prisma } from '@prisma/client'
+import { prisma } from '@/lib/prisma';
+import { fetchMeta } from '@/lib/meta-fetcher';
+import { normalizeUrl, extractDomain } from '@/lib/url-validator';
+import type { Bookmark, AiStatus, Tag, Prisma } from '@prisma/client';
 
 // Type for tag with isAiGenerated flag (for UI)
 export interface TagWithMeta extends Tag {
-  isAiGenerated?: boolean
+  isAiGenerated?: boolean;
 }
 
 // Type for bookmark with tags
 export type BookmarkWithTags = Bookmark & {
-  tags: TagWithMeta[]
-}
+  tags: TagWithMeta[];
+};
 
 // Input types
 export interface CreateBookmarkInput {
-  userId: string
-  url: string
+  userId: string;
+  url: string;
 }
 
 export interface UpdateBookmarkInput {
-  title?: string
+  title?: string;
 }
 
 export interface ListBookmarksInput {
-  userId: string
-  query?: string
-  tagId?: string
-  cursor?: string
-  limit?: number
+  userId: string;
+  query?: string;
+  tagId?: string;
+  cursor?: string;
+  limit?: number;
 }
 
 export interface ListBookmarksResult {
-  bookmarks: BookmarkWithTags[]
-  nextCursor: string | null
-  totalCount: number
+  bookmarks: BookmarkWithTags[];
+  nextCursor: string | null;
+  totalCount: number;
 }
 
 // Helper to transform BookmarkTag[] to Tag[]
@@ -49,21 +49,19 @@ function transformBookmarkTags(
   return {
     ...bookmark,
     tags: bookmark.tags.map((bt) => bt.tag),
-  }
+  };
 }
 
 /**
  * Create a new bookmark
  * Returns existing bookmark if URL already exists for user
  */
-export async function createBookmark(
-  input: CreateBookmarkInput
-): Promise<BookmarkWithTags> {
-  const { userId, url } = input
+export async function createBookmark(input: CreateBookmarkInput): Promise<BookmarkWithTags> {
+  const { userId, url } = input;
 
   // Normalize URL for deduplication
-  const normalizedUrl = normalizeUrl(url)
-  const domain = extractDomain(url)
+  const normalizedUrl = normalizeUrl(url);
+  const domain = extractDomain(url);
 
   // Check for existing bookmark with same URL
   const existing = await prisma.bookmark.findFirst({
@@ -78,10 +76,10 @@ export async function createBookmark(
         },
       },
     },
-  })
+  });
 
   if (existing) {
-    return transformBookmarkTags(existing)
+    return transformBookmarkTags(existing);
   }
 
   // Fetch meta information
@@ -91,19 +89,19 @@ export async function createBookmark(
     thumbnail: null as string | null,
     favicon: null as string | null,
     language: null as 'zh' | 'en' | null,
-  }
+  };
 
   try {
-    const fetchedMeta = await fetchMeta(url)
+    const fetchedMeta = await fetchMeta(url);
     metaInfo = {
       title: fetchedMeta.title,
       description: fetchedMeta.description,
       thumbnail: fetchedMeta.thumbnail,
       favicon: fetchedMeta.favicon,
       language: fetchedMeta.language as 'zh' | 'en' | null,
-    }
+    };
   } catch (error) {
-    console.error('Failed to fetch meta for URL:', url, error)
+    console.error('Failed to fetch meta for URL:', url, error);
     // Continue without meta - bookmark will still be created
   }
 
@@ -127,9 +125,9 @@ export async function createBookmark(
         },
       },
     },
-  })
+  });
 
-  return transformBookmarkTags(bookmark)
+  return transformBookmarkTags(bookmark);
 }
 
 /**
@@ -151,8 +149,8 @@ export async function getBookmark(
         },
       },
     },
-  })
-  return bookmark ? transformBookmarkTags(bookmark) : null
+  });
+  return bookmark ? transformBookmarkTags(bookmark) : null;
 }
 
 /**
@@ -166,10 +164,10 @@ export async function updateBookmark(
   // Verify ownership
   const existing = await prisma.bookmark.findFirst({
     where: { id: bookmarkId, userId },
-  })
+  });
 
   if (!existing) {
-    return null
+    return null;
   }
 
   const bookmark = await prisma.bookmark.update({
@@ -185,44 +183,39 @@ export async function updateBookmark(
         },
       },
     },
-  })
-  return transformBookmarkTags(bookmark)
+  });
+  return transformBookmarkTags(bookmark);
 }
 
 /**
  * Delete a bookmark
  */
-export async function deleteBookmark(
-  bookmarkId: string,
-  userId: string
-): Promise<boolean> {
+export async function deleteBookmark(bookmarkId: string, userId: string): Promise<boolean> {
   // Verify ownership
   const existing = await prisma.bookmark.findFirst({
     where: { id: bookmarkId, userId },
-  })
+  });
 
   if (!existing) {
-    return false
+    return false;
   }
 
   await prisma.bookmark.delete({
     where: { id: bookmarkId },
-  })
+  });
 
-  return true
+  return true;
 }
 
 /**
  * List bookmarks with pagination and filtering
  */
-export async function listBookmarks(
-  input: ListBookmarksInput
-): Promise<ListBookmarksResult> {
-  const { userId, query, tagId, cursor, limit = 20 } = input
-  const take = Math.min(limit, 50) // Max 50 per page
+export async function listBookmarks(input: ListBookmarksInput): Promise<ListBookmarksResult> {
+  const { userId, query, tagId, cursor, limit = 20 } = input;
+  const take = Math.min(limit, 50); // Max 50 per page
 
   // Build where clause
-  const where: Prisma.BookmarkWhereInput = { userId }
+  const where: Prisma.BookmarkWhereInput = { userId };
 
   // Search query (title, description, aiSummary)
   if (query) {
@@ -234,16 +227,16 @@ export async function listBookmarks(
           { aiSummary: { contains: query, mode: 'insensitive' } },
         ],
       },
-    ]
+    ];
   }
 
   // Tag filter
   if (tagId) {
-    where.tags = { some: { tagId } }
+    where.tags = { some: { tagId } };
   }
 
   // Get total count
-  const totalCount = await prisma.bookmark.count({ where })
+  const totalCount = await prisma.bookmark.count({ where });
 
   // Fetch bookmarks with cursor pagination
   const rawBookmarks = await prisma.bookmark.findMany({
@@ -261,25 +254,25 @@ export async function listBookmarks(
       cursor: { id: cursor },
       skip: 1, // Skip the cursor
     }),
-  })
+  });
 
   // Check if there's a next page
-  const hasMore = rawBookmarks.length > take
-  const nextCursor = hasMore ? rawBookmarks[take - 1]?.id ?? null : null
+  const hasMore = rawBookmarks.length > take;
+  const nextCursor = hasMore ? (rawBookmarks[take - 1]?.id ?? null) : null;
 
   // Remove extra item if present
   if (hasMore) {
-    rawBookmarks.pop()
+    rawBookmarks.pop();
   }
 
   // Transform to BookmarkWithTags
-  const bookmarks = rawBookmarks.map(transformBookmarkTags)
+  const bookmarks = rawBookmarks.map(transformBookmarkTags);
 
   return {
     bookmarks,
     nextCursor,
     totalCount,
-  }
+  };
 }
 
 /**
@@ -293,10 +286,10 @@ export async function updateBookmarkTags(
   // Verify ownership
   const existing = await prisma.bookmark.findFirst({
     where: { id: bookmarkId, userId },
-  })
+  });
 
   if (!existing) {
-    return null
+    return null;
   }
 
   // Verify all tags belong to user
@@ -305,14 +298,14 @@ export async function updateBookmarkTags(
       id: { in: tagIds },
       userId,
     },
-  })
+  });
 
-  const validTagIds = validTags.map((t) => t.id)
+  const validTagIds = validTags.map((t) => t.id);
 
   // Delete existing tags and add new ones
   await prisma.bookmarkTag.deleteMany({
     where: { bookmarkId },
-  })
+  });
 
   if (validTagIds.length > 0) {
     await prisma.bookmarkTag.createMany({
@@ -320,7 +313,7 @@ export async function updateBookmarkTags(
         bookmarkId,
         tagId,
       })),
-    })
+    });
   }
 
   // Update timestamp and fetch result
@@ -336,8 +329,8 @@ export async function updateBookmarkTags(
         },
       },
     },
-  })
-  return transformBookmarkTags(bookmark)
+  });
+  return transformBookmarkTags(bookmark);
 }
 
 /**
@@ -353,7 +346,7 @@ export async function updateBookmarkAiStatus(
   if (tagIds) {
     await prisma.bookmarkTag.deleteMany({
       where: { bookmarkId },
-    })
+    });
 
     if (tagIds.length > 0) {
       await prisma.bookmarkTag.createMany({
@@ -361,7 +354,7 @@ export async function updateBookmarkAiStatus(
           bookmarkId,
           tagId,
         })),
-      })
+      });
     }
   }
 
@@ -380,16 +373,14 @@ export async function updateBookmarkAiStatus(
         },
       },
     },
-  })
-  return transformBookmarkTags(bookmark)
+  });
+  return transformBookmarkTags(bookmark);
 }
 
 /**
  * Get bookmarks pending AI processing
  */
-export async function getPendingAiBookmarks(
-  limit: number = 10
-): Promise<BookmarkWithTags[]> {
+export async function getPendingAiBookmarks(limit: number = 10): Promise<BookmarkWithTags[]> {
   const rawBookmarks = await prisma.bookmark.findMany({
     where: {
       aiStatus: 'PENDING',
@@ -403,8 +394,8 @@ export async function getPendingAiBookmarks(
     },
     orderBy: { createdAt: 'asc' },
     take: limit,
-  })
-  return rawBookmarks.map(transformBookmarkTags)
+  });
+  return rawBookmarks.map(transformBookmarkTags);
 }
 
 /**
@@ -414,7 +405,7 @@ export async function checkUrlExists(
   userId: string,
   url: string
 ): Promise<BookmarkWithTags | null> {
-  const normalizedUrl = normalizeUrl(url)
+  const normalizedUrl = normalizeUrl(url);
   const bookmark = await prisma.bookmark.findFirst({
     where: {
       userId,
@@ -427,6 +418,6 @@ export async function checkUrlExists(
         },
       },
     },
-  })
-  return bookmark ? transformBookmarkTags(bookmark) : null
+  });
+  return bookmark ? transformBookmarkTags(bookmark) : null;
 }

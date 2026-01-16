@@ -1,29 +1,29 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { signOut, useSession } from 'next-auth/react'
-import { LogOut, Settings, User } from 'lucide-react'
-import Link from 'next/link'
-import { cn } from '@/lib/utils'
+import { useState } from 'react';
+import { signOut, useSession } from 'next-auth/react';
+import { LogOut, Settings, User } from 'lucide-react';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export function UserMenu() {
-  const { data: session } = useSession()
-  const [isOpen, setIsOpen] = useState(false)
+  const { data: session } = useSession();
+  const [isOpen, setIsOpen] = useState(false);
 
   if (!session?.user) {
-    return null
+    return null;
   }
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' })
-  }
+    await signOut({ callbackUrl: '/' });
+  };
 
   return (
     <div className="relative">
       {/* Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-[#00d4ff] focus:ring-offset-2 focus:ring-offset-[#0a1628]"
+        className="flex items-center gap-2 rounded-full focus:ring-2 focus:ring-[#00d4ff] focus:ring-offset-2 focus:ring-offset-[#0a1628] focus:outline-none"
         data-testid="user-menu-trigger"
       >
         <div
@@ -49,22 +49,14 @@ export function UserMenu() {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} aria-hidden="true" />
 
           {/* Menu */}
           <div className="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-xl border border-[#234567] bg-[#132337] shadow-lg">
             {/* User Info */}
             <div className="border-b border-[#234567] px-4 py-3">
-              <p className="text-sm font-medium text-[#e8f0f7]">
-                {session.user.name}
-              </p>
-              <p className="truncate text-xs text-[#8892a0]">
-                {session.user.email}
-              </p>
+              <p className="text-sm font-medium text-[#e8f0f7]">{session.user.name}</p>
+              <p className="truncate text-xs text-[#8892a0]">{session.user.email}</p>
             </div>
 
             {/* Menu Items */}
@@ -113,5 +105,5 @@ export function UserMenu() {
         </>
       )}
     </div>
-  )
+  );
 }

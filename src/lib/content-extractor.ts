@@ -3,21 +3,21 @@
  * 用於 AI 摘要產生
  */
 
-import { JSDOM } from 'jsdom'
-import { Readability } from '@mozilla/readability'
+import { JSDOM } from 'jsdom';
+import { Readability } from '@mozilla/readability';
 
 // Maximum content length for AI processing
-const MAX_CONTENT_LENGTH = 10000 // ~10KB text
+const MAX_CONTENT_LENGTH = 10000; // ~10KB text
 
 export interface ExtractedContent {
-  title: string | null
-  content: string | null
-  textContent: string | null
-  excerpt: string | null
-  byline: string | null
-  siteName: string | null
-  length: number
-  language: string | null
+  title: string | null;
+  content: string | null;
+  textContent: string | null;
+  excerpt: string | null;
+  byline: string | null;
+  siteName: string | null;
+  length: number;
+  language: string | null;
 }
 
 /**
@@ -25,18 +25,18 @@ export interface ExtractedContent {
  */
 export function extractContent(html: string, url: string): ExtractedContent {
   try {
-    const dom = new JSDOM(html, { url })
-    const reader = new Readability(dom.window.document)
-    const article = reader.parse()
+    const dom = new JSDOM(html, { url });
+    const reader = new Readability(dom.window.document);
+    const article = reader.parse();
 
     if (!article) {
       // Return minimal extraction if Readability fails
-      return extractFallback(html)
+      return extractFallback(html);
     }
 
     // Clean and truncate text content for AI processing
-    const textContent = cleanText(article.textContent || '')
-    const truncatedContent = truncateText(textContent, MAX_CONTENT_LENGTH)
+    const textContent = cleanText(article.textContent || '');
+    const truncatedContent = truncateText(textContent, MAX_CONTENT_LENGTH);
 
     return {
       title: article.title || null,
@@ -47,10 +47,10 @@ export function extractContent(html: string, url: string): ExtractedContent {
       siteName: article.siteName || null,
       length: textContent.length,
       language: detectLanguage(truncatedContent),
-    }
+    };
   } catch (error) {
-    console.error('Content extraction failed:', error)
-    return extractFallback(html)
+    console.error('Content extraction failed:', error);
+    return extractFallback(html);
   }
 }
 
@@ -59,14 +59,14 @@ export function extractContent(html: string, url: string): ExtractedContent {
  */
 function extractFallback(html: string): ExtractedContent {
   try {
-    const dom = new JSDOM(html)
-    const doc = dom.window.document
+    const dom = new JSDOM(html);
+    const doc = dom.window.document;
 
     // Extract title
     const title =
       doc.querySelector('title')?.textContent?.trim() ||
       doc.querySelector('h1')?.textContent?.trim() ||
-      null
+      null;
 
     // Extract main content from common containers
     const mainSelectors = [
@@ -78,21 +78,21 @@ function extractFallback(html: string): ExtractedContent {
       '.entry-content',
       '#content',
       '.article-body',
-    ]
+    ];
 
-    let textContent = ''
+    let textContent = '';
     for (const selector of mainSelectors) {
-      const element = doc.querySelector(selector)
+      const element = doc.querySelector(selector);
       if (element) {
-        textContent = cleanText(element.textContent || '')
-        if (textContent.length > 100) break
+        textContent = cleanText(element.textContent || '');
+        if (textContent.length > 100) break;
       }
     }
 
     // If no main content found, use body
     if (!textContent || textContent.length < 100) {
       // Remove script, style, nav, footer, header
-      const body = doc.body?.cloneNode(true) as Element
+      const body = doc.body?.cloneNode(true) as Element;
       if (body) {
         const removeSelectors = [
           'script',
@@ -104,15 +104,15 @@ function extractFallback(html: string): ExtractedContent {
           '.sidebar',
           '.navigation',
           '.menu',
-        ]
+        ];
         removeSelectors.forEach((sel) => {
-          body.querySelectorAll(sel).forEach((el) => el.remove())
-        })
-        textContent = cleanText(body.textContent || '')
+          body.querySelectorAll(sel).forEach((el) => el.remove());
+        });
+        textContent = cleanText(body.textContent || '');
       }
     }
 
-    const truncatedContent = truncateText(textContent, MAX_CONTENT_LENGTH)
+    const truncatedContent = truncateText(textContent, MAX_CONTENT_LENGTH);
 
     return {
       title,
@@ -123,9 +123,9 @@ function extractFallback(html: string): ExtractedContent {
       siteName: null,
       length: textContent.length,
       language: detectLanguage(truncatedContent),
-    }
+    };
   } catch (error) {
-    console.error('Fallback extraction failed:', error)
+    console.error('Fallback extraction failed:', error);
     return {
       title: null,
       content: null,
@@ -135,7 +135,7 @@ function extractFallback(html: string): ExtractedContent {
       siteName: null,
       length: 0,
       language: null,
-    }
+    };
   }
 }
 
@@ -143,9 +143,9 @@ function extractFallback(html: string): ExtractedContent {
  * Extract first N characters for AI fallback summary
  */
 export function extractFirstNChars(html: string, n: number = 200): string {
-  const extracted = extractContent(html, 'https://example.com')
-  const text = extracted.textContent || ''
-  return text.slice(0, n).trim()
+  const extracted = extractContent(html, 'https://example.com');
+  const text = extracted.textContent || '';
+  return text.slice(0, n).trim();
 }
 
 /**
@@ -160,44 +160,44 @@ function cleanText(text: string): string {
       .replace(/[\x00-\x1F\x7F]/g, '')
       // Trim
       .trim()
-  )
+  );
 }
 
 /**
  * Truncate text to maximum length, preserving word boundaries
  */
 function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text
+  if (text.length <= maxLength) return text;
 
-  const truncated = text.slice(0, maxLength)
+  const truncated = text.slice(0, maxLength);
   // Find last space to avoid cutting words
-  const lastSpace = truncated.lastIndexOf(' ')
+  const lastSpace = truncated.lastIndexOf(' ');
   if (lastSpace > maxLength * 0.8) {
-    return truncated.slice(0, lastSpace) + '...'
+    return truncated.slice(0, lastSpace) + '...';
   }
-  return truncated + '...'
+  return truncated + '...';
 }
 
 /**
  * Simple language detection based on character frequency
  */
 function detectLanguage(text: string): 'zh' | 'en' | null {
-  if (!text || text.length < 10) return null
+  if (!text || text.length < 10) return null;
 
   // Count Chinese characters
-  const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length
+  const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
   // Count ASCII letters
-  const asciiLetters = (text.match(/[a-zA-Z]/g) || []).length
+  const asciiLetters = (text.match(/[a-zA-Z]/g) || []).length;
 
-  const totalSignificant = chineseChars + asciiLetters
-  if (totalSignificant === 0) return null
+  const totalSignificant = chineseChars + asciiLetters;
+  if (totalSignificant === 0) return null;
 
-  const chineseRatio = chineseChars / totalSignificant
+  const chineseRatio = chineseChars / totalSignificant;
 
-  if (chineseRatio > 0.3) return 'zh'
-  if (chineseRatio < 0.1 && asciiLetters > 50) return 'en'
+  if (chineseRatio > 0.3) return 'zh';
+  if (chineseRatio < 0.1 && asciiLetters > 50) return 'en';
 
-  return null
+  return null;
 }
 
 /**
@@ -205,11 +205,11 @@ function detectLanguage(text: string): 'zh' | 'en' | null {
  */
 export function isExtractable(html: string): boolean {
   try {
-    const extracted = extractContent(html, 'https://example.com')
-    const textLength = extracted.textContent?.length || 0
+    const extracted = extractContent(html, 'https://example.com');
+    const textLength = extracted.textContent?.length || 0;
 
     // Minimum content length threshold
-    if (textLength < 50) return false
+    if (textLength < 50) return false;
 
     // Check for common error page indicators
     const errorIndicators = [
@@ -222,22 +222,22 @@ export function isExtractable(html: string): boolean {
       '頁面不存在',
       '找不到頁面',
       '存取被拒',
-    ]
+    ];
 
-    const lowerContent = (extracted.textContent || '').toLowerCase()
-    const lowerTitle = (extracted.title || '').toLowerCase()
+    const lowerContent = (extracted.textContent || '').toLowerCase();
+    const lowerTitle = (extracted.title || '').toLowerCase();
 
     for (const indicator of errorIndicators) {
       if (
         lowerTitle.includes(indicator) ||
         (lowerContent.includes(indicator) && textLength < 500)
       ) {
-        return false
+        return false;
       }
     }
 
-    return true
+    return true;
   } catch {
-    return false
+    return false;
   }
 }

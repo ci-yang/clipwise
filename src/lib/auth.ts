@@ -1,7 +1,7 @@
-import NextAuth from 'next-auth'
-import Google from 'next-auth/providers/google'
-import { PrismaAdapter } from '@auth/prisma-adapter'
-import { prisma } from './prisma'
+import NextAuth from 'next-auth';
+import Google from 'next-auth/providers/google';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from './prisma';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -23,21 +23,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     session({ session, user }) {
       if (session.user) {
-        session.user.id = user.id
+        session.user.id = user.id;
       }
-      return session
+      return session;
     },
     authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user
-      const isOnDashboard = nextUrl.pathname.startsWith('/bookmarks')
-      const isOnSettings = nextUrl.pathname.startsWith('/settings')
-      const isProtectedRoute = isOnDashboard || isOnSettings
+      const isLoggedIn = !!auth?.user;
+      const isOnDashboard = nextUrl.pathname.startsWith('/bookmarks');
+      const isOnSettings = nextUrl.pathname.startsWith('/settings');
+      const isProtectedRoute = isOnDashboard || isOnSettings;
 
       if (isProtectedRoute && !isLoggedIn) {
-        return Response.redirect(new URL('/login', nextUrl))
+        return Response.redirect(new URL('/login', nextUrl));
       }
 
-      return true
+      return true;
     },
   },
-})
+});
