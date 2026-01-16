@@ -11,6 +11,7 @@ export default defineConfig({
     include: [
       'tests/unit/**/*.{test,spec}.{js,ts,jsx,tsx}',
       'tests/integration/**/*.{test,spec}.{js,ts,jsx,tsx}',
+      'tests/contract/**/*.{test,spec}.{js,ts,jsx,tsx}',
     ],
     exclude: ['node_modules', 'tests/e2e'],
     coverage: {

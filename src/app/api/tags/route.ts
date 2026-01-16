@@ -42,10 +42,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Get tags error:', error);
-    return NextResponse.json(
-      { error: 'Failed to get tags' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to get tags' }, { status: 500 });
   }
 }
 
@@ -68,13 +65,16 @@ export async function POST(request: NextRequest) {
     // Create tag
     const tag = await createTag(session.user.id, name);
 
-    return NextResponse.json({
-      tag: {
-        id: tag.id,
-        name: tag.name,
-        createdAt: tag.createdAt,
+    return NextResponse.json(
+      {
+        tag: {
+          id: tag.id,
+          name: tag.name,
+          createdAt: tag.createdAt,
+        },
       },
-    }, { status: 201 });
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Create tag error:', error);
     const message = error instanceof Error ? error.message : 'Failed to create tag';

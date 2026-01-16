@@ -5,10 +5,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Import fallback function directly to avoid OpenAI client initialization
-const generateFallbackSummary = (
-  description: string | null,
-  content: string | null
-): string => {
+const generateFallbackSummary = (description: string | null, content: string | null): string => {
   if (description && description.length > 0) {
     return description.length > 200 ? description.slice(0, 200) + '...' : description;
   }
@@ -86,7 +83,8 @@ describe('AI Process - Rate Limit Integration', () => {
   });
 
   it('should track AI quota usage', async () => {
-    const { checkAiQuota, incrementAiQuota, clearRateLimitStore } = await import('@/lib/rate-limit');
+    const { checkAiQuota, incrementAiQuota, clearRateLimitStore } =
+      await import('@/lib/rate-limit');
 
     // Clear any existing state
     clearRateLimitStore();

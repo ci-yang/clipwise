@@ -51,11 +51,7 @@ Please respond with just the summary, without any prefix or explanation.`;
 /**
  * Build tag generation prompt
  */
-export function buildTagPrompt(
-  content: string,
-  summary: string,
-  language: 'zh' | 'en'
-): string {
+export function buildTagPrompt(content: string, summary: string, language: 'zh' | 'en'): string {
   if (language === 'zh') {
     return `根據以下摘要和內容，生成 2-5 個相關的標籤。標籤應該：
 - 簡短（1-3 個字詞）
@@ -94,8 +90,9 @@ export function buildCombinedPrompt(
       ? content.slice(0, AiPromptConfig.maxContentLength) + '...'
       : content;
 
-  const systemPrompt = language === 'zh'
-    ? `你是一個專業的內容分析助手。請分析使用者提供的網頁內容，並生成：
+  const systemPrompt =
+    language === 'zh'
+      ? `你是一個專業的內容分析助手。請分析使用者提供的網頁內容，並生成：
 1. 一段 50-100 字的摘要，使用與原文相同的語言
 2. 2-5 個相關標籤，使用與原文相同的語言
 3. 判斷內容的主要語言（zh 或 en）
@@ -106,7 +103,7 @@ export function buildCombinedPrompt(
   "tags": ["標籤1", "標籤2", "標籤3"],
   "language": "zh"
 }`
-    : `You are a professional content analysis assistant. Please analyze the provided web content and generate:
+      : `You are a professional content analysis assistant. Please analyze the provided web content and generate:
 1. A 50-100 word summary in the same language as the original content
 2. 2-5 relevant tags in the same language as the original content
 3. Determine the primary language of the content (zh or en)

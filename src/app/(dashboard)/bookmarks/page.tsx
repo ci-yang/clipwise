@@ -1,28 +1,27 @@
 /**
- * Bookmarks Page - 書籤主頁面
- * T043: 建立 src/app/(dashboard)/bookmarks/page.tsx
- * 📐 Figma: 48:1184
+ * T072: Bookmarks Page - 書籤主頁面
+ * 📐 Figma: 48:1184 | 02-dashboard.html
  *
- * Design specs:
- * - Grid layout: 3 columns on desktop, responsive
- * - Bookmark cards with AI status indicator
- * - Tag filters in sidebar/header
+ * Features:
+ * - Server-side initial data fetch
+ * - Client-side infinite scroll
+ * - Search and tag filtering
  */
 
 import { Suspense } from 'react';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { listBookmarks } from '@/services/bookmark.service';
-import { BookmarkCard } from '@/components/bookmarks/bookmark-card';
+import { BookmarkInfiniteList } from '@/components/bookmarks/bookmark-infinite-list';
 import { BookmarkInput } from '@/components/bookmarks/bookmark-input';
 import { BookmarkGridSkeleton } from '@/components/bookmarks/bookmark-skeleton';
+import { EmptyState } from '@/components/bookmarks/empty-state';
 import { Plus } from 'lucide-react';
 
 interface BookmarksPageProps {
   searchParams: Promise<{
     q?: string;
     tagId?: string;
-    cursor?: string;
     add?: string;
   }>;
 }
@@ -58,14 +57,9 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
         </BookmarkInput>
       </div>
 
-      {/* Bookmark Grid */}
+      {/* Bookmark List with Infinite Scroll */}
       <Suspense fallback={<BookmarkGridSkeleton />}>
-        <BookmarkList
-          userId={session.user.id}
-          query={params.q}
-          tagId={params.tagId}
-          cursor={params.cursor}
-        />
+        <BookmarkListContainer userId={session.user.id} query={params.q} tagId={params.tagId} />
       </Suspense>
 
       {/* Add Bookmark Modal (controlled by URL param) */}
@@ -74,75 +68,59 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
   );
 }
 
-async function BookmarkList({
+async function BookmarkListContainer({
   userId,
   query,
   tagId,
-  cursor,
 }: {
   userId: string;
   query?: string;
   tagId?: string;
-  cursor?: string;
 }) {
   const result = await listBookmarks({
     userId,
     query,
     tagId,
-    cursor,
     limit: 20,
   });
 
-  if (result.bookmarks.length === 0) {
+  // Show empty state for first-time users
+  if (result.bookmarks.length === 0 && !query && !tagId) {
     return (
       <div className="border-border bg-background-alt/50 flex flex-col items-center justify-center rounded-2xl border border-dashed py-16">
         <div className="bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
           <Plus className="text-muted-foreground h-8 w-8" />
         </div>
-        <h3 className="text-foreground mb-2 text-lg font-medium">
-          {query ? '找不到符合的書籤' : '還沒有任何書籤'}
-        </h3>
-        <p className="text-muted-foreground mb-6 text-sm">
-          {query ? '請嘗試不同的搜尋關鍵字' : '貼上連結，AI 將自動產生摘要與標籤'}
-        </p>
-        {!query && (
-          <BookmarkInput>
-            <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-xl px-6 py-3 font-medium transition-colors">
-              <Plus className="h-5 w-5" />
-              新增第一個書籤
-            </button>
-          </BookmarkInput>
-        )}
+        <h3 className="text-foreground mb-2 text-lg font-medium">還沒有任何書籤</h3>
+        <p className="text-muted-foreground mb-6 text-sm">貼上連結，AI 將自動產生摘要與標籤</p>
+        <BookmarkInput>
+          <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-xl px-6 py-3 font-medium transition-colors">
+            <Plus className="h-5 w-5" />
+            新增第一個書籤
+          </button>
+        </BookmarkInput>
       </div>
     );
   }
 
+  // Show search empty state
+  if (result.bookmarks.length === 0 && (query || tagId)) {
+    return (
+      <EmptyState
+        variant="search"
+        message="找不到符合的書籤"
+        description={query ? `沒有找到包含「${query}」的書籤` : '此標籤下沒有書籤'}
+      />
+    );
+  }
+
   return (
-    <>
-      {/* Results Count */}
-      <p className="text-muted-foreground text-sm">
-        共 {result.totalCount} 個書籤
-        {query && ` (搜尋: "${query}")`}
-      </p>
-
-      {/* Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {result.bookmarks.map((bookmark) => (
-          <BookmarkCard key={bookmark.id} bookmark={bookmark} />
-        ))}
-      </div>
-
-      {/* Load More */}
-      {result.nextCursor && (
-        <div className="flex justify-center pt-4">
-          <a
-            href={`/bookmarks?cursor=${result.nextCursor}${query ? `&q=${query}` : ''}${tagId ? `&tagId=${tagId}` : ''}`}
-            className="border-border text-foreground hover:bg-muted rounded-xl border px-6 py-2.5 text-sm font-medium transition-colors"
-          >
-            載入更多
-          </a>
-        </div>
-      )}
-    </>
+    <BookmarkInfiniteList
+      initialBookmarks={result.bookmarks}
+      initialCursor={result.nextCursor}
+      totalCount={result.totalCount}
+      query={query}
+      tagId={tagId}
+    />
   );
 }

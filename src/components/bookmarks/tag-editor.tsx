@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, KeyboardEvent } from 'react';
 import { X, Plus, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TAG_CONSTRAINTS, normalizeTag, validateTag } from '@/services/tag.service';
@@ -46,6 +46,13 @@ export function TagEditor({
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const idCounterRef = useRef(0);
+
+  // Generate stable unique ID
+  const generateId = useCallback(() => {
+    idCounterRef.current += 1;
+    return `new-tag-${idCounterRef.current}`;
+  }, []);
 
   // Handle click outside to close suggestions
   useEffect(() => {
@@ -103,7 +110,7 @@ export function TagEditor({
       onChange([
         ...tags,
         {
-          id: `new-${Date.now()}`,
+          id: generateId(),
           name: normalized,
           isAiGenerated: false,
         },
@@ -139,8 +146,7 @@ export function TagEditor({
 
   const filteredSuggestions = suggestions.filter(
     (s) =>
-      !tags.some((t) => t.id === s.id) &&
-      s.name.toLowerCase().includes(inputValue.toLowerCase())
+      !tags.some((t) => t.id === s.id) && s.name.toLowerCase().includes(inputValue.toLowerCase())
   );
 
   return (
@@ -170,7 +176,7 @@ export function TagEditor({
                 e.stopPropagation();
                 removeTag(tag.id);
               }}
-              className="hover:bg-white/10 -mr-0.5 rounded p-0.5 transition-colors"
+              className="-mr-0.5 rounded p-0.5 transition-colors hover:bg-white/10"
               aria-label={`移除標籤 ${tag.name}`}
             >
               <X className="h-3 w-3" />
@@ -231,20 +237,18 @@ export function TagEditor({
 
       {/* Create New Tag Option */}
       {showSuggestions &&
-        inputValue.trim() &&
-        !filteredSuggestions.some(
-          (s) => s.name.toLowerCase() === inputValue.trim().toLowerCase()
-        ) ? (
-          <div className="border-border bg-card absolute top-full left-0 z-10 mt-1 w-full rounded-xl border p-1 shadow-lg">
-            <button
-              onClick={() => addTag(inputValue)}
-              className="text-foreground hover:bg-muted flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
-            >
-              <Plus className="text-primary h-4 w-4" />
-              建立標籤 &quot;{normalizeTag(inputValue)}&quot;
-            </button>
-          </div>
-        ) : null}
+      inputValue.trim() &&
+      !filteredSuggestions.some((s) => s.name.toLowerCase() === inputValue.trim().toLowerCase()) ? (
+        <div className="border-border bg-card absolute top-full left-0 z-10 mt-1 w-full rounded-xl border p-1 shadow-lg">
+          <button
+            onClick={() => addTag(inputValue)}
+            className="text-foreground hover:bg-muted flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
+          >
+            <Plus className="text-primary h-4 w-4" />
+            建立標籤 &quot;{normalizeTag(inputValue)}&quot;
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

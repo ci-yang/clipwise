@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { AiStatus } from '@prisma/client';
 
 interface AiStatusResponse {
@@ -143,6 +143,7 @@ export function useAiStatus(
 
 /**
  * Hook for polling multiple bookmarks' AI status
+ * Uses interval-based polling without initial synchronous fetch
  */
 export function useMultipleAiStatus(
   bookmarkIds: string[],
@@ -154,48 +155,74 @@ export function useMultipleAiStatus(
 
   const { enabled = true, interval = 3000 } = options;
 
-  // Fetch status for all pending bookmarks
-  const fetchAllStatuses = useCallback(async () => {
-    const pendingIds = bookmarkIds.filter((id) => {
-      const current = statuses.get(id);
-      return !current || current.status === 'PENDING' || current.status === 'PROCESSING';
-    });
+  // Keep refs in sync via effect
+  const statusesRef = useRef<Map<string, { status: AiStatus | null; summary: string | null }>>(
+    new Map()
+  );
+  const bookmarkIdsRef = useRef<string[]>([]);
 
-    if (pendingIds.length === 0) return;
+  // Update refs in effect, not during render
+  useEffect(() => {
+    statusesRef.current = statuses;
+  }, [statuses]);
 
-    const results = await Promise.all(
-      pendingIds.map(async (id) => {
-        try {
-          const response = await fetch(`/api/ai/status/${id}`);
-          if (!response.ok) return { id, status: null, summary: null };
-          const data: AiStatusResponse = await response.json();
-          return { id, status: data.aiStatus, summary: data.aiSummary };
-        } catch {
-          return { id, status: null, summary: null };
-        }
-      })
-    );
+  useEffect(() => {
+    bookmarkIdsRef.current = bookmarkIds;
+  }, [bookmarkIds]);
 
-    setStatuses((prev) => {
-      const newMap = new Map(prev);
-      for (const result of results) {
-        newMap.set(result.id, { status: result.status, summary: result.summary });
-      }
-      return newMap;
-    });
-  }, [bookmarkIds, statuses]);
-
+  // Polling effect
   useEffect(() => {
     if (!enabled || bookmarkIds.length === 0) return;
 
-    // Initial fetch
-    fetchAllStatuses();
+    let isMounted = true;
+
+    const fetchAllStatuses = async () => {
+      const currentStatuses = statusesRef.current;
+      const currentIds = bookmarkIdsRef.current;
+
+      const pendingIds = currentIds.filter((id) => {
+        const current = currentStatuses.get(id);
+        return !current || current.status === 'PENDING' || current.status === 'PROCESSING';
+      });
+
+      if (pendingIds.length === 0) return;
+
+      const results = await Promise.all(
+        pendingIds.map(async (id) => {
+          try {
+            const response = await fetch(`/api/ai/status/${id}`);
+            if (!response.ok) return { id, status: null, summary: null };
+            const data: AiStatusResponse = await response.json();
+            return { id, status: data.aiStatus, summary: data.aiSummary };
+          } catch {
+            return { id, status: null, summary: null };
+          }
+        })
+      );
+
+      if (isMounted) {
+        setStatuses((prev) => {
+          const newMap = new Map(prev);
+          for (const result of results) {
+            newMap.set(result.id, { status: result.status, summary: result.summary });
+          }
+          return newMap;
+        });
+      }
+    };
+
+    // Initial fetch with slight delay to avoid synchronous setState
+    const initialTimer = setTimeout(fetchAllStatuses, 0);
 
     // Set up polling
-    const timer = setInterval(fetchAllStatuses, interval);
+    const pollingTimer = setInterval(fetchAllStatuses, interval);
 
-    return () => clearInterval(timer);
-  }, [enabled, bookmarkIds, interval, fetchAllStatuses]);
+    return () => {
+      isMounted = false;
+      clearTimeout(initialTimer);
+      clearInterval(pollingTimer);
+    };
+  }, [enabled, bookmarkIds.length, interval]);
 
   return statuses;
 }

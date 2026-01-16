@@ -26,7 +26,8 @@ describe('AI Prompt Module', () => {
     });
 
     it('should build English prompt for English content', () => {
-      const content = 'This is an article about artificial intelligence and its latest developments.';
+      const content =
+        'This is an article about artificial intelligence and its latest developments.';
       const title = 'AI Technology Developments';
 
       const prompt = buildSummaryPrompt(content, title, 'en');

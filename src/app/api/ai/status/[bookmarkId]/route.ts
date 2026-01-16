@@ -52,9 +52,6 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     );
   } catch (error) {
     console.error('AI status error:', error);
-    return NextResponse.json(
-      { error: 'Failed to get AI status' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to get AI status' }, { status: 500 });
   }
 }

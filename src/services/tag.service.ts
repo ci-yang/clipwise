@@ -154,10 +154,7 @@ export async function getUserTags(userId: string): Promise<TagWithCount[]> {
         select: { bookmarks: true },
       },
     },
-    orderBy: [
-      { bookmarks: { _count: 'desc' } },
-      { name: 'asc' },
-    ],
+    orderBy: [{ bookmarks: { _count: 'desc' } }, { name: 'asc' }],
   });
 }
 

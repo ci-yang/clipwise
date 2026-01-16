@@ -28,13 +28,7 @@ interface TagListProps {
   size?: 'sm' | 'md';
 }
 
-export function TagList({
-  tags,
-  onRemove,
-  maxDisplay = 5,
-  className,
-  size = 'md',
-}: TagListProps) {
+export function TagList({ tags, onRemove, maxDisplay = 5, className, size = 'md' }: TagListProps) {
   const displayTags = maxDisplay > 0 ? tags.slice(0, maxDisplay) : tags;
   const hiddenCount = tags.length - displayTags.length;
 
@@ -60,7 +54,7 @@ export function TagList({
           {onRemove && (
             <button
               onClick={() => onRemove(tag.id)}
-              className="hover:bg-white/10 -mr-1 rounded p-0.5 transition-colors"
+              className="-mr-1 rounded p-0.5 transition-colors hover:bg-white/10"
               aria-label={`移除標籤 ${tag.name}`}
             >
               <X className="h-3 w-3" />
@@ -78,9 +72,7 @@ export function TagList({
           +{hiddenCount}
         </span>
       )}
-      {tags.length === 0 && (
-        <span className="text-muted-foreground text-sm">無標籤</span>
-      )}
+      {tags.length === 0 && <span className="text-muted-foreground text-sm">無標籤</span>}
     </div>
   );
 }
