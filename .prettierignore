@@ -1,0 +1,26 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+out
+build
+dist
+
+# Generated files
+pnpm-lock.yaml
+*.lock
+
+# Coverage
+coverage
+
+# Playwright
+playwright-report
+test-results
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
