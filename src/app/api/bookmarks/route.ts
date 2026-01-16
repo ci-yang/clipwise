@@ -8,7 +8,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { validateUrl } from '@/lib/url-validator'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { checkBookmarkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit'
 import {
   createBookmark,
   listBookmarks,
@@ -32,25 +32,20 @@ export async function POST(request: Request) {
     const userId = session.user.id
 
     // Check rate limit
-    const rateLimitResult = await checkRateLimit(userId, 'bookmark-create', {
-      limit: 10,
-      windowMs: 60 * 1000, // 1 minute
-    })
+    const rateLimitResult = checkBookmarkRateLimit(userId)
 
-    if (!rateLimitResult.allowed) {
+    if (!rateLimitResult.success) {
+      const retryAfter = rateLimitResult.reset - Math.floor(Date.now() / 1000)
       return NextResponse.json(
         {
           error: '請求過於頻繁，請稍後再試',
-          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000),
+          retryAfter: Math.max(1, retryAfter),
         },
         {
           status: 429,
           headers: {
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': String(rateLimitResult.reset),
-            'Retry-After': String(
-              Math.ceil((rateLimitResult.reset - Date.now()) / 1000)
-            ),
+            ...getRateLimitHeaders(rateLimitResult),
+            'Retry-After': String(Math.max(1, retryAfter)),
           },
         }
       )
@@ -89,9 +84,7 @@ export async function POST(request: Request) {
     if (existingBookmark) {
       return NextResponse.json(existingBookmark, {
         status: 200, // Return 200 for existing
-        headers: {
-          'X-RateLimit-Remaining': String(rateLimitResult.remaining),
-        },
+        headers: getRateLimitHeaders(rateLimitResult),
       })
     }
 
@@ -103,9 +96,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(bookmark, {
       status: 201,
-      headers: {
-        'X-RateLimit-Remaining': String(rateLimitResult.remaining),
-      },
+      headers: getRateLimitHeaders(rateLimitResult),
     })
   } catch (error) {
     console.error('Error creating bookmark:', error)

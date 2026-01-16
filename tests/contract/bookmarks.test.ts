@@ -3,10 +3,12 @@
  * 驗證 API 符合 OpenAPI 規格定義
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { RateLimitResult } from '@/types'
 
-// Mock auth
+// Mock auth - must use correct type for NextAuth v5
+const mockAuth = vi.fn()
 vi.mock('@/lib/auth', () => ({
-  auth: vi.fn(),
+  auth: mockAuth,
 }))
 
 // Mock prisma
@@ -26,25 +28,49 @@ vi.mock('@/lib/meta-fetcher', () => ({
 
 // Mock rate-limit
 vi.mock('@/lib/rate-limit', () => ({
-  checkRateLimit: vi.fn(),
+  checkBookmarkRateLimit: vi.fn(),
+  getRateLimitHeaders: vi.fn(() => ({
+    'X-RateLimit-Limit': '10',
+    'X-RateLimit-Remaining': '9',
+    'X-RateLimit-Reset': '1234567890',
+  })),
 }))
 
 // Mock url-validator
 vi.mock('@/lib/url-validator', () => ({
   validateUrl: vi.fn(),
-  isValidUrl: vi.fn(),
+  normalizeUrl: vi.fn((url: string) => url),
+  extractDomain: vi.fn((url: string) => new URL(url).hostname),
 }))
 
-import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { fetchMeta } from '@/lib/meta-fetcher'
-import { checkRateLimit } from '@/lib/rate-limit'
+// Mock bookmark service
+vi.mock('@/services/bookmark.service', () => ({
+  createBookmark: vi.fn(),
+  checkUrlExists: vi.fn(),
+}))
+
+import { checkBookmarkRateLimit } from '@/lib/rate-limit'
 import { validateUrl } from '@/lib/url-validator'
+import { createBookmark, checkUrlExists } from '@/services/bookmark.service'
 
 describe('POST /api/bookmarks - Contract Tests', () => {
   const mockSession = {
     user: { id: 'user-123', name: 'Test User', email: 'test@example.com' },
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  }
+
+  const mockRateLimitSuccess: RateLimitResult = {
+    success: true,
+    limit: 10,
+    remaining: 9,
+    reset: Math.floor(Date.now() / 1000) + 60,
+  }
+
+  const mockRateLimitExceeded: RateLimitResult = {
+    success: false,
+    limit: 10,
+    remaining: 0,
+    reset: Math.floor(Date.now() / 1000) + 60,
   }
 
   beforeEach(() => {
@@ -58,7 +84,8 @@ describe('POST /api/bookmarks - Contract Tests', () => {
   describe('Request Validation', () => {
     it('should require url field in request body', async () => {
       // Arrange
-      vi.mocked(auth).mockResolvedValue(mockSession)
+      mockAuth.mockResolvedValue(mockSession)
+      vi.mocked(checkBookmarkRateLimit).mockReturnValue(mockRateLimitSuccess)
 
       const request = new Request('http://localhost/api/bookmarks', {
         method: 'POST',
@@ -78,7 +105,8 @@ describe('POST /api/bookmarks - Contract Tests', () => {
 
     it('should validate url format', async () => {
       // Arrange
-      vi.mocked(auth).mockResolvedValue(mockSession)
+      mockAuth.mockResolvedValue(mockSession)
+      vi.mocked(checkBookmarkRateLimit).mockReturnValue(mockRateLimitSuccess)
       vi.mocked(validateUrl).mockReturnValue({
         valid: false,
         error: 'Invalid URL format',
@@ -104,7 +132,7 @@ describe('POST /api/bookmarks - Contract Tests', () => {
   describe('Authentication', () => {
     it('should return 401 if not authenticated', async () => {
       // Arrange
-      vi.mocked(auth).mockResolvedValue(null)
+      mockAuth.mockResolvedValue(null)
 
       const request = new Request('http://localhost/api/bookmarks', {
         method: 'POST',
@@ -124,12 +152,8 @@ describe('POST /api/bookmarks - Contract Tests', () => {
   describe('Rate Limiting', () => {
     it('should return 429 when rate limit exceeded', async () => {
       // Arrange
-      vi.mocked(auth).mockResolvedValue(mockSession)
-      vi.mocked(checkRateLimit).mockResolvedValue({
-        allowed: false,
-        remaining: 0,
-        reset: Date.now() + 60000,
-      })
+      mockAuth.mockResolvedValue(mockSession)
+      vi.mocked(checkBookmarkRateLimit).mockReturnValue(mockRateLimitExceeded)
 
       const request = new Request('http://localhost/api/bookmarks', {
         method: 'POST',
@@ -150,40 +174,29 @@ describe('POST /api/bookmarks - Contract Tests', () => {
     it('should create bookmark and return 201 with correct schema', async () => {
       // Arrange
       const testUrl = 'https://example.com/article'
-      const mockMeta = {
-        title: 'Test Article',
-        description: 'Test description',
-        thumbnail: 'https://example.com/image.jpg',
-        favicon: 'https://example.com/favicon.ico',
-        domain: 'example.com',
-      }
       const mockBookmark = {
         id: 'bookmark-123',
         userId: 'user-123',
         url: testUrl,
-        title: mockMeta.title,
-        description: mockMeta.description,
+        title: 'Test Article',
+        description: 'Test description',
+        content: null,
         aiSummary: null,
-        aiStatus: 'PENDING',
-        thumbnail: mockMeta.thumbnail,
-        favicon: mockMeta.favicon,
-        domain: mockMeta.domain,
+        aiStatus: 'PENDING' as const,
+        thumbnail: 'https://example.com/image.jpg',
+        favicon: 'https://example.com/favicon.ico',
+        domain: 'example.com',
         language: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         tags: [],
       }
 
-      vi.mocked(auth).mockResolvedValue(mockSession)
-      vi.mocked(checkRateLimit).mockResolvedValue({
-        allowed: true,
-        remaining: 9,
-        reset: Date.now() + 60000,
-      })
+      mockAuth.mockResolvedValue(mockSession)
+      vi.mocked(checkBookmarkRateLimit).mockReturnValue(mockRateLimitSuccess)
       vi.mocked(validateUrl).mockReturnValue({ valid: true })
-      vi.mocked(fetchMeta).mockResolvedValue(mockMeta)
-      vi.mocked(prisma.bookmark.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.bookmark.create).mockResolvedValue(mockBookmark)
+      vi.mocked(checkUrlExists).mockResolvedValue(null)
+      vi.mocked(createBookmark).mockResolvedValue(mockBookmark)
 
       const request = new Request('http://localhost/api/bookmarks', {
         method: 'POST',
@@ -218,20 +231,23 @@ describe('POST /api/bookmarks - Contract Tests', () => {
         userId: 'user-123',
         url: testUrl,
         title: 'Existing Bookmark',
-        aiStatus: 'COMPLETED',
+        description: null,
+        content: null,
+        aiSummary: null,
+        aiStatus: 'COMPLETED' as const,
+        thumbnail: null,
+        favicon: null,
+        domain: 'example.com',
+        language: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         tags: [],
       }
 
-      vi.mocked(auth).mockResolvedValue(mockSession)
-      vi.mocked(checkRateLimit).mockResolvedValue({
-        allowed: true,
-        remaining: 9,
-        reset: Date.now() + 60000,
-      })
+      mockAuth.mockResolvedValue(mockSession)
+      vi.mocked(checkBookmarkRateLimit).mockReturnValue(mockRateLimitSuccess)
       vi.mocked(validateUrl).mockReturnValue({ valid: true })
-      vi.mocked(prisma.bookmark.findFirst).mockResolvedValue(existingBookmark)
+      vi.mocked(checkUrlExists).mockResolvedValue(existingBookmark)
 
       const request = new Request('http://localhost/api/bookmarks', {
         method: 'POST',
@@ -253,12 +269,8 @@ describe('POST /api/bookmarks - Contract Tests', () => {
   describe('SSRF Protection (422)', () => {
     it('should reject private IP addresses', async () => {
       // Arrange
-      vi.mocked(auth).mockResolvedValue(mockSession)
-      vi.mocked(checkRateLimit).mockResolvedValue({
-        allowed: true,
-        remaining: 9,
-        reset: Date.now() + 60000,
-      })
+      mockAuth.mockResolvedValue(mockSession)
+      vi.mocked(checkBookmarkRateLimit).mockReturnValue(mockRateLimitSuccess)
       vi.mocked(validateUrl).mockReturnValue({
         valid: false,
         error: 'URL points to a private IP address',
@@ -280,12 +292,8 @@ describe('POST /api/bookmarks - Contract Tests', () => {
 
     it('should reject localhost URLs', async () => {
       // Arrange
-      vi.mocked(auth).mockResolvedValue(mockSession)
-      vi.mocked(checkRateLimit).mockResolvedValue({
-        allowed: true,
-        remaining: 9,
-        reset: Date.now() + 60000,
-      })
+      mockAuth.mockResolvedValue(mockSession)
+      vi.mocked(checkBookmarkRateLimit).mockReturnValue(mockRateLimitSuccess)
       vi.mocked(validateUrl).mockReturnValue({
         valid: false,
         error: 'URL points to localhost',

@@ -29,7 +29,8 @@ export interface MetaInfo {
  * Fetch and parse meta information from a URL
  */
 export async function fetchMeta(url: string): Promise<MetaInfo> {
-  const domain = new URL(url).hostname
+  // Validate URL
+  new URL(url)
 
   // Create abort controller for timeout
   const controller = new AbortController()
@@ -100,11 +101,18 @@ export async function fetchMeta(url: string): Promise<MetaInfo> {
   } catch (error) {
     clearTimeout(timeoutId)
 
-    if (error instanceof Error) {
-      if (error.name === 'AbortError') {
+    // Check for AbortError (can be Error or DOMException)
+    if (
+      error instanceof Error ||
+      (error && typeof error === 'object' && 'name' in error)
+    ) {
+      const errorWithName = error as { name: string; message?: string }
+      if (errorWithName.name === 'AbortError') {
         throw new Error('Request timeout')
       }
-      throw error
+      if (error instanceof Error) {
+        throw error
+      }
     }
     throw new Error('Failed to fetch URL')
   }
@@ -149,7 +157,7 @@ export function extractMeta(html: string, baseUrl: string): MetaInfo {
     doc.querySelector('link[rel="icon"]') ||
     doc.querySelector('link[rel="shortcut icon"]') ||
     doc.querySelector('link[rel="apple-touch-icon"]')
-  const faviconHref = faviconLink?.getAttribute('href')
+  const faviconHref = faviconLink?.getAttribute('href') ?? null
   const favicon = resolveUrl(faviconHref) || resolveUrl('/favicon.ico')
 
   // Extract language

@@ -89,5 +89,5 @@ export function generateRandomColor(): string {
     '#A855F7', // purple
     '#EC4899', // pink
   ]
-  return colors[Math.floor(Math.random() * colors.length)]
+  return colors[Math.floor(Math.random() * colors.length)] as string
 }

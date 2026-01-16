@@ -212,8 +212,10 @@ export function normalizeUrl(url: string): string {
 
     // Add pathname (preserve case for path)
     let pathname = parsed.pathname
-    // Remove trailing slash except for root
-    if (pathname.length > 1 && pathname.endsWith('/')) {
+    // Remove trailing slash (including root slash for base URLs)
+    if (pathname === '/') {
+      pathname = ''
+    } else if (pathname.endsWith('/')) {
       pathname = pathname.slice(0, -1)
     }
     normalized += pathname

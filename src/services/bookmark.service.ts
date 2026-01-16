@@ -6,11 +6,16 @@
 import { prisma } from '@/lib/prisma'
 import { fetchMeta } from '@/lib/meta-fetcher'
 import { normalizeUrl, extractDomain } from '@/lib/url-validator'
-import type { Bookmark, AiStatus, Tag } from '@prisma/client'
+import type { Bookmark, AiStatus, Tag, Prisma } from '@prisma/client'
+
+// Type for tag with isAiGenerated flag (for UI)
+export interface TagWithMeta extends Tag {
+  isAiGenerated?: boolean
+}
 
 // Type for bookmark with tags
 export type BookmarkWithTags = Bookmark & {
-  tags: Tag[]
+  tags: TagWithMeta[]
 }
 
 // Input types
@@ -37,6 +42,16 @@ export interface ListBookmarksResult {
   totalCount: number
 }
 
+// Helper to transform BookmarkTag[] to Tag[]
+function transformBookmarkTags(
+  bookmark: Bookmark & { tags: Array<{ tag: Tag }> }
+): BookmarkWithTags {
+  return {
+    ...bookmark,
+    tags: bookmark.tags.map((bt) => bt.tag),
+  }
+}
+
 /**
  * Create a new bookmark
  * Returns existing bookmark if URL already exists for user
@@ -57,12 +72,16 @@ export async function createBookmark(
       url: normalizedUrl,
     },
     include: {
-      tags: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
   })
 
   if (existing) {
-    return existing
+    return transformBookmarkTags(existing)
   }
 
   // Fetch meta information
@@ -102,11 +121,15 @@ export async function createBookmark(
       aiStatus: 'PENDING',
     },
     include: {
-      tags: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
   })
 
-  return bookmark
+  return transformBookmarkTags(bookmark)
 }
 
 /**
@@ -116,15 +139,20 @@ export async function getBookmark(
   bookmarkId: string,
   userId: string
 ): Promise<BookmarkWithTags | null> {
-  return prisma.bookmark.findFirst({
+  const bookmark = await prisma.bookmark.findFirst({
     where: {
       id: bookmarkId,
       userId,
     },
     include: {
-      tags: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
   })
+  return bookmark ? transformBookmarkTags(bookmark) : null
 }
 
 /**
@@ -144,16 +172,21 @@ export async function updateBookmark(
     return null
   }
 
-  return prisma.bookmark.update({
+  const bookmark = await prisma.bookmark.update({
     where: { id: bookmarkId },
     data: {
       title: input.title,
       updatedAt: new Date(),
     },
     include: {
-      tags: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
   })
+  return transformBookmarkTags(bookmark)
 }
 
 /**
@@ -189,11 +222,7 @@ export async function listBookmarks(
   const take = Math.min(limit, 50) // Max 50 per page
 
   // Build where clause
-  const where: {
-    userId: string
-    AND?: unknown[]
-    tags?: { some: { id: string } }
-  } = { userId }
+  const where: Prisma.BookmarkWhereInput = { userId }
 
   // Search query (title, description, aiSummary)
   if (query) {
@@ -210,17 +239,21 @@ export async function listBookmarks(
 
   // Tag filter
   if (tagId) {
-    where.tags = { some: { id: tagId } }
+    where.tags = { some: { tagId } }
   }
 
   // Get total count
   const totalCount = await prisma.bookmark.count({ where })
 
   // Fetch bookmarks with cursor pagination
-  const bookmarks = await prisma.bookmark.findMany({
+  const rawBookmarks = await prisma.bookmark.findMany({
     where,
     include: {
-      tags: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
     orderBy: { createdAt: 'desc' },
     take: take + 1, // Fetch one extra to check if there's more
@@ -231,13 +264,16 @@ export async function listBookmarks(
   })
 
   // Check if there's a next page
-  const hasMore = bookmarks.length > take
-  const nextCursor = hasMore ? bookmarks[take - 1].id : null
+  const hasMore = rawBookmarks.length > take
+  const nextCursor = hasMore ? rawBookmarks[take - 1]?.id ?? null : null
 
   // Remove extra item if present
   if (hasMore) {
-    bookmarks.pop()
+    rawBookmarks.pop()
   }
+
+  // Transform to BookmarkWithTags
+  const bookmarks = rawBookmarks.map(transformBookmarkTags)
 
   return {
     bookmarks,
@@ -273,19 +309,35 @@ export async function updateBookmarkTags(
 
   const validTagIds = validTags.map((t) => t.id)
 
-  // Update bookmark with new tags
-  return prisma.bookmark.update({
+  // Delete existing tags and add new ones
+  await prisma.bookmarkTag.deleteMany({
+    where: { bookmarkId },
+  })
+
+  if (validTagIds.length > 0) {
+    await prisma.bookmarkTag.createMany({
+      data: validTagIds.map((tagId) => ({
+        bookmarkId,
+        tagId,
+      })),
+    })
+  }
+
+  // Update timestamp and fetch result
+  const bookmark = await prisma.bookmark.update({
     where: { id: bookmarkId },
     data: {
-      tags: {
-        set: validTagIds.map((id) => ({ id })),
-      },
       updatedAt: new Date(),
     },
     include: {
-      tags: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
   })
+  return transformBookmarkTags(bookmark)
 }
 
 /**
@@ -297,33 +349,39 @@ export async function updateBookmarkAiStatus(
   aiSummary?: string | null,
   tagIds?: string[]
 ): Promise<BookmarkWithTags | null> {
-  const updateData: {
-    aiStatus: AiStatus
-    aiSummary?: string | null
-    tags?: { set: { id: string }[] }
-    updatedAt: Date
-  } = {
-    aiStatus: status,
-    updatedAt: new Date(),
-  }
-
-  if (aiSummary !== undefined) {
-    updateData.aiSummary = aiSummary
-  }
-
+  // Update tags if provided
   if (tagIds) {
-    updateData.tags = {
-      set: tagIds.map((id) => ({ id })),
+    await prisma.bookmarkTag.deleteMany({
+      where: { bookmarkId },
+    })
+
+    if (tagIds.length > 0) {
+      await prisma.bookmarkTag.createMany({
+        data: tagIds.map((tagId) => ({
+          bookmarkId,
+          tagId,
+        })),
+      })
     }
   }
 
-  return prisma.bookmark.update({
+  // Update bookmark
+  const bookmark = await prisma.bookmark.update({
     where: { id: bookmarkId },
-    data: updateData,
+    data: {
+      aiStatus: status,
+      ...(aiSummary !== undefined && { aiSummary }),
+      updatedAt: new Date(),
+    },
     include: {
-      tags: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
   })
+  return transformBookmarkTags(bookmark)
 }
 
 /**
@@ -332,16 +390,21 @@ export async function updateBookmarkAiStatus(
 export async function getPendingAiBookmarks(
   limit: number = 10
 ): Promise<BookmarkWithTags[]> {
-  return prisma.bookmark.findMany({
+  const rawBookmarks = await prisma.bookmark.findMany({
     where: {
       aiStatus: 'PENDING',
     },
     include: {
-      tags: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
     orderBy: { createdAt: 'asc' },
     take: limit,
   })
+  return rawBookmarks.map(transformBookmarkTags)
 }
 
 /**
@@ -352,13 +415,18 @@ export async function checkUrlExists(
   url: string
 ): Promise<BookmarkWithTags | null> {
   const normalizedUrl = normalizeUrl(url)
-  return prisma.bookmark.findFirst({
+  const bookmark = await prisma.bookmark.findFirst({
     where: {
       userId,
       url: normalizedUrl,
     },
     include: {
-      tags: true,
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
     },
   })
+  return bookmark ? transformBookmarkTags(bookmark) : null
 }
