@@ -11,7 +11,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { BookmarkCard } from './bookmark-card';
+import { BookmarkListCard } from './bookmark-list-card';
 import { BookmarkSkeleton } from './bookmark-skeleton';
 import { EmptyState } from './empty-state';
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
@@ -92,10 +92,10 @@ export function BookmarkInfiniteList({
         {query && ` (搜尋: "${query}")`}
       </p>
 
-      {/* Bookmark Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {/* Bookmark Grid - 2 column layout matching Figma */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {bookmarks.map((bookmark) => (
-          <BookmarkCard key={bookmark.id} bookmark={bookmark} />
+          <BookmarkListCard key={bookmark.id} bookmark={bookmark} />
         ))}
 
         {/* Loading skeletons */}

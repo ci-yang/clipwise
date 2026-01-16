@@ -19,6 +19,7 @@ import { BookmarkGridSkeleton } from '@/components/bookmarks/bookmark-skeleton';
 import { EmptyState } from '@/components/bookmarks/empty-state';
 import { SearchWrapper } from '@/components/bookmarks/search-wrapper';
 import { SearchResultsCount, NoSearchResults } from '@/components/bookmarks/search-highlight';
+import { TagFilterContainer } from '@/components/bookmarks/tag-filter-container';
 import { Plus } from 'lucide-react';
 
 interface BookmarksPageProps {
@@ -64,6 +65,9 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
           </BookmarkInput>
         </div>
       </div>
+
+      {/* Tag Filter Bar */}
+      <TagFilterContainer className="scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6" />
 
       {/* Bookmark List with Infinite Scroll */}
       <Suspense fallback={<BookmarkGridSkeleton />}>
