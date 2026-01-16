@@ -1,11 +1,12 @@
 /**
- * T072: Bookmarks Page - 書籤主頁面
+ * T080: Bookmarks Page - 書籤主頁面
  * 📐 Figma: 48:1184 | 02-dashboard.html
  *
  * Features:
  * - Server-side initial data fetch
  * - Client-side infinite scroll
- * - Search and tag filtering
+ * - Full-text search with highlighting
+ * - Tag filtering
  */
 
 import { Suspense } from 'react';
@@ -16,6 +17,8 @@ import { BookmarkInfiniteList } from '@/components/bookmarks/bookmark-infinite-l
 import { BookmarkInput } from '@/components/bookmarks/bookmark-input';
 import { BookmarkGridSkeleton } from '@/components/bookmarks/bookmark-skeleton';
 import { EmptyState } from '@/components/bookmarks/empty-state';
+import { SearchWrapper } from '@/components/bookmarks/search-wrapper';
+import { SearchResultsCount, NoSearchResults } from '@/components/bookmarks/search-highlight';
 import { Plus } from 'lucide-react';
 
 interface BookmarksPageProps {
@@ -42,19 +45,24 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-foreground text-2xl font-bold">我的書籤</h1>
           <p className="text-muted-foreground mt-1 text-sm">管理和組織你收藏的連結</p>
         </div>
 
-        {/* Mobile Add Button */}
-        <BookmarkInput>
-          <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors lg:hidden">
-            <Plus className="h-4 w-4" />
-            新增
-          </button>
-        </BookmarkInput>
+        <div className="flex items-center gap-3">
+          {/* Search Input */}
+          <SearchWrapper className="w-full sm:w-64" />
+
+          {/* Mobile Add Button */}
+          <BookmarkInput>
+            <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors lg:hidden">
+              <Plus className="h-4 w-4" />
+              新增
+            </button>
+          </BookmarkInput>
+        </div>
       </div>
 
       {/* Bookmark List with Infinite Scroll */}
@@ -105,22 +113,31 @@ async function BookmarkListContainer({
 
   // Show search empty state
   if (result.bookmarks.length === 0 && (query || tagId)) {
+    if (query) {
+      return <NoSearchResults query={query} />;
+    }
     return (
       <EmptyState
-        variant="search"
-        message="找不到符合的書籤"
-        description={query ? `沒有找到包含「${query}」的書籤` : '此標籤下沒有書籤'}
+        variant="folder"
+        message="此標籤下沒有書籤"
+        description="嘗試其他標籤或新增書籤到此標籤"
       />
     );
   }
 
   return (
-    <BookmarkInfiniteList
-      initialBookmarks={result.bookmarks}
-      initialCursor={result.nextCursor}
-      totalCount={result.totalCount}
-      query={query}
-      tagId={tagId}
-    />
+    <div className="space-y-4">
+      {/* Search Results Count */}
+      {query && <SearchResultsCount count={result.totalCount} query={query} />}
+
+      {/* Bookmark List */}
+      <BookmarkInfiniteList
+        initialBookmarks={result.bookmarks}
+        initialCursor={result.nextCursor}
+        totalCount={result.totalCount}
+        query={query}
+        tagId={tagId}
+      />
+    </div>
   );
 }
