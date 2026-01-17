@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.zeabur.app/zeabur.json",
+  "build": {
+    "type": "nextjs"
+  },
+  "serverless": false,
+  "environment": {
+    "NEXTAUTH_SECRET": "@NEXTAUTH_SECRET",
+    "NEXTAUTH_URL": "@NEXTAUTH_URL",
+    "GOOGLE_CLIENT_ID": "@GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET": "@GOOGLE_CLIENT_SECRET",
+    "DATABASE_URL": "@DATABASE_URL",
+    "OPENAI_API_KEY": "@OPENAI_API_KEY"
+  }
+}
