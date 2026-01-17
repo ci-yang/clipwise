@@ -2,10 +2,11 @@
  * Settings Client Component - 設定頁面客戶端元件
  * 📐 Figma: 44:253 | 13-settings.html
  *
- * Features:
- * - 帳號資訊顯示
- * - AI 功能開關 (FR-036) - 預留
- * - 登出功能
+ * Design sections:
+ * 1. 個人資料 - 頭像、姓名、email
+ * 2. 外觀設定 - 深色模式、跟隨系統
+ * 3. AI 設定 - 自動摘要、自動標籤
+ * 4. 帳號 - 登出按鈕
  */
 
 'use client';
@@ -13,15 +14,42 @@
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
 import type { User } from 'next-auth';
-import { LogOut, User as UserIcon, Sparkles } from 'lucide-react';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 interface SettingsClientProps {
   user: User;
 }
 
+// Toggle switch component
+function ToggleSwitch({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <button
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative h-6 w-11 rounded-xl transition-colors ${
+        checked ? 'bg-[#00d4ff]' : 'bg-[#234567]'
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 h-5 w-5 rounded-[10px] bg-white transition-all ${
+          checked ? 'left-[22px]' : 'left-0.5'
+        }`}
+      />
+    </button>
+  );
+}
+
 export function SettingsClient({ user }: SettingsClientProps) {
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [aiEnabled, setAiEnabled] = useState(true);
+  const [autoSummary, setAutoSummary] = useState(true);
+  const [autoTags, setAutoTags] = useState(true);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -29,86 +57,84 @@ export function SettingsClient({ user }: SettingsClientProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Account Section */}
-      <section className="rounded-2xl border border-[#234567] bg-[#132337] p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <UserIcon className="h-5 w-5 text-[#00d4ff]" />
-          <h2 className="text-lg font-medium text-[#e8f0f7]">帳號資訊</h2>
-        </div>
+    <div className="max-w-3xl space-y-6">
+      {/* 個人資料 Section - Figma: 44:286 */}
+      <section className="rounded-xl border border-[#234567] bg-[rgba(19,35,55,0.85)] p-6 backdrop-blur-[10px]">
+        <h2 className="mb-4 text-lg font-bold text-[#e8f0f7]">個人資料</h2>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            {/* Avatar */}
-            <div
-              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-2xl font-medium text-white"
-              style={{
-                backgroundImage:
-                  'linear-gradient(135deg, rgba(0, 212, 255, 1) 0%, rgba(19, 78, 74, 1) 100%)',
-              }}
-            >
-              {user.name?.charAt(0) || 'U'}
-            </div>
-
-            <div>
-              <p className="text-lg font-medium text-[#e8f0f7]">{user.name}</p>
-              <p className="text-sm text-[#8892a0]">{user.email}</p>
-            </div>
+        <div className="flex items-center gap-6">
+          {/* Avatar - Figma: 44:290 */}
+          <div
+            className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-2xl font-medium text-white"
+            style={{
+              backgroundImage:
+                'linear-gradient(135deg, rgba(0, 212, 255, 1) 0%, rgba(19, 78, 74, 1) 100%)',
+            }}
+          >
+            {user.name?.charAt(0) || 'U'}
           </div>
 
-          <div className="border-t border-[#234567] pt-4">
-            <p className="text-sm text-[#8892a0]">透過 Google 帳號登入</p>
+          {/* User Info - Figma: 44:292 */}
+          <div className="flex flex-col">
+            <p className="text-lg font-medium text-[#e8f0f7]">{user.name}</p>
+            <p className="text-sm font-light text-[#8892a0]">{user.email}</p>
+            <p className="mt-1 text-xs text-[#8892a0]">透過 Google 登入</p>
           </div>
         </div>
       </section>
 
-      {/* AI Settings Section */}
-      <section className="rounded-2xl border border-[#234567] bg-[#132337] p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-[#00d4ff]" />
-          <h2 className="text-lg font-medium text-[#e8f0f7]">AI 功能</h2>
-        </div>
+      {/* 外觀設定 Section - Figma: 44:299 */}
+      <section className="rounded-xl border border-[#234567] bg-[rgba(19,35,55,0.85)] p-6 backdrop-blur-[10px]">
+        <h2 className="mb-4 text-lg font-bold text-[#e8f0f7]">外觀設定</h2>
+        <ThemeToggle />
+      </section>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-[#e8f0f7]">自動產生摘要與標籤</p>
-              <p className="text-sm text-[#8892a0]">
-                新增書籤時，AI 將自動分析內容並產生摘要與標籤
-              </p>
+      {/* AI 設定 Section - Figma: 44:319 */}
+      <section className="rounded-xl border border-[#234567] bg-[rgba(19,35,55,0.85)] p-6 backdrop-blur-[10px]">
+        <h2 className="mb-4 text-lg font-bold text-[#e8f0f7]">AI 設定</h2>
+
+        <div className="flex flex-col gap-4">
+          {/* 自動生成摘要 - Figma: 44:323 */}
+          <div className="flex items-center justify-between py-3">
+            <div className="flex flex-col">
+              <span className="text-base font-medium text-[#e8f0f7]">自動生成摘要</span>
+              <span className="text-sm font-light text-[#8892a0]">
+                新增書籤時自動生成 AI 摘要
+              </span>
             </div>
-            <button
-              onClick={() => setAiEnabled(!aiEnabled)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${
-                aiEnabled ? 'bg-[#00d4ff]' : 'bg-[#234567]'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
-                  aiEnabled ? 'left-[22px]' : 'left-0.5'
-                }`}
-              />
-            </button>
+            <ToggleSwitch checked={autoSummary} onChange={setAutoSummary} />
           </div>
 
-          <div className="rounded-xl bg-[rgba(0,212,255,0.1)] p-4">
-            <p className="text-sm text-[#00d4ff]">
-              💡 AI 配額：每日 20 次自動處理（黑客松限定）
-            </p>
+          {/* 自動生成標籤 - Figma: 44:331 */}
+          <div className="flex items-center justify-between border-t border-[#234567] py-3">
+            <div className="flex flex-col">
+              <span className="text-base font-medium text-[#e8f0f7]">自動生成標籤</span>
+              <span className="text-sm font-light text-[#8892a0]">
+                AI 根據內容自動建議標籤
+              </span>
+            </div>
+            <ToggleSwitch checked={autoTags} onChange={setAutoTags} />
           </div>
         </div>
       </section>
 
-      {/* Sign Out Section */}
-      <section className="rounded-2xl border border-[#234567] bg-[#132337] p-6">
-        <button
-          onClick={handleSignOut}
-          disabled={isSigningOut}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400 transition-colors hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <LogOut className="h-5 w-5" />
-          {isSigningOut ? '登出中...' : '登出帳號'}
-        </button>
+      {/* 帳號 Section - Figma: 44:339 */}
+      <section className="rounded-xl border border-[#234567] bg-[rgba(19,35,55,0.85)] p-6 backdrop-blur-[10px]">
+        <h2 className="mb-4 text-lg font-bold text-[#e8f0f7]">帳號</h2>
+
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-base font-medium text-[#e8f0f7]">登出</span>
+            <span className="text-sm font-light text-[#8892a0]">登出目前的帳號</span>
+          </div>
+          <button
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+            className="rounded-xl border border-[#234567] px-4 py-2 text-base font-light text-[#8892a0] transition-colors hover:border-[#8892a0] hover:text-[#e8f0f7] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSigningOut ? '登出中...' : '登出'}
+          </button>
+        </div>
       </section>
     </div>
   );
