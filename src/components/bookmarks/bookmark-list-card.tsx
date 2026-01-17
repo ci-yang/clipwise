@@ -23,6 +23,7 @@ import {
   Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BookmarkViewDialog } from './bookmark-view-dialog';
 import { BookmarkEditDialog } from './bookmark-edit-dialog';
 import { DeleteConfirmDialog } from './delete-confirm-dialog';
 import type { BookmarkWithTags } from '@/services/bookmark.service';
@@ -67,6 +68,7 @@ const formatRelativeTime = (date: Date | string): string => {
 
 export function BookmarkListCard({ bookmark, onUpdate, onDelete }: BookmarkListCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const domainStyle = getDomainStyle(bookmark.domain || '');
@@ -123,8 +125,14 @@ export function BookmarkListCard({ bookmark, onUpdate, onDelete }: BookmarkListC
     }
   }, [bookmark.id, onDelete]);
 
+  const openViewDialog = useCallback(() => {
+    setIsMenuOpen(false);
+    setIsViewOpen(true);
+  }, []);
+
   const openEditDialog = useCallback(() => {
     setIsMenuOpen(false);
+    setIsViewOpen(false);
     setIsEditOpen(true);
   }, []);
 
@@ -294,14 +302,22 @@ export function BookmarkListCard({ bookmark, onUpdate, onDelete }: BookmarkListC
         </>
       )}
 
-      {/* Click Area - Opens Edit Dialog */}
+      {/* Click Area - Opens View Dialog (US5: 查看書籤) */}
       <button
-        onClick={openEditDialog}
+        onClick={openViewDialog}
         className="absolute inset-0 z-0"
-        aria-label={`編輯 ${bookmark.title || bookmark.url}`}
+        aria-label={`查看 ${bookmark.title || bookmark.url}`}
       />
 
-      {/* Edit Dialog */}
+      {/* View Dialog (US5) */}
+      <BookmarkViewDialog
+        bookmark={bookmark}
+        open={isViewOpen}
+        onOpenChange={setIsViewOpen}
+        onEdit={openEditDialog}
+      />
+
+      {/* Edit Dialog (US8) */}
       <BookmarkEditDialog
         bookmark={bookmark}
         open={isEditOpen}
