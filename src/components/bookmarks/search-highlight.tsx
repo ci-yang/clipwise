@@ -36,7 +36,8 @@ export function SearchHighlight({
   text,
   query,
   className,
-  highlightClassName = 'bg-primary/20 text-primary font-medium',
+  // Figma design: yellow highlight bg-[rgba(251,191,36,0.3)] text-[#fbbf24]
+  highlightClassName = 'bg-[rgba(251,191,36,0.3)] text-[#fbbf24] font-medium',
   maxLength,
   showEllipsis = true,
 }: SearchHighlightProps) {
@@ -168,11 +169,7 @@ export function SearchHighlightSummary({
 /**
  * 輔助函數：截斷文字
  */
-function truncateText(
-  text: string,
-  maxLength?: number,
-  showEllipsis = true
-): string {
+function truncateText(text: string, maxLength?: number, showEllipsis = true): string {
   if (!text) return '';
   if (!maxLength || text.length <= maxLength) return text;
   return text.slice(0, maxLength) + (showEllipsis ? '...' : '');
@@ -201,8 +198,8 @@ export function SearchResultsCount({
 
   return (
     <p className={cn('text-muted-foreground text-sm', className)}>
-      找到 <span className="text-foreground font-medium">{count}</span> 個符合
-      「<span className="text-primary">{query}</span>」的結果
+      找到 <span className="text-foreground font-medium">{count}</span> 個符合 「
+      <span className="text-primary">{query}</span>」的結果
     </p>
   );
 }
@@ -210,13 +207,7 @@ export function SearchResultsCount({
 /**
  * 無搜尋結果提示
  */
-export function NoSearchResults({
-  query,
-  className,
-}: {
-  query: string;
-  className?: string;
-}) {
+export function NoSearchResults({ query, className }: { query: string; className?: string }) {
   return (
     <div className={cn('py-12 text-center', className)}>
       <p className="text-muted-foreground">

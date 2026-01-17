@@ -4,9 +4,10 @@
  *
  * Design sections:
  * 1. 個人資料 - 頭像、姓名、email
- * 2. 外觀設定 - 深色模式、跟隨系統
- * 3. AI 設定 - 自動摘要、自動標籤
- * 4. 帳號 - 登出按鈕
+ * 2. AI 設定 - 自動摘要、自動標籤
+ * 3. 帳號 - 登出按鈕
+ *
+ * Note: 外觀設定已移除，目前只支援深色模式
  */
 
 'use client';
@@ -14,7 +15,6 @@
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
 import type { User } from 'next-auth';
-import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 interface SettingsClientProps {
   user: User;
@@ -83,12 +83,6 @@ export function SettingsClient({ user }: SettingsClientProps) {
         </div>
       </section>
 
-      {/* 外觀設定 Section - Figma: 44:299 */}
-      <section className="rounded-xl border border-[#234567] bg-[rgba(19,35,55,0.85)] p-6 backdrop-blur-[10px]">
-        <h2 className="mb-4 text-lg font-bold text-[#e8f0f7]">外觀設定</h2>
-        <ThemeToggle />
-      </section>
-
       {/* AI 設定 Section - Figma: 44:319 */}
       <section className="rounded-xl border border-[#234567] bg-[rgba(19,35,55,0.85)] p-6 backdrop-blur-[10px]">
         <h2 className="mb-4 text-lg font-bold text-[#e8f0f7]">AI 設定</h2>
@@ -98,9 +92,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
           <div className="flex items-center justify-between py-3">
             <div className="flex flex-col">
               <span className="text-base font-medium text-[#e8f0f7]">自動生成摘要</span>
-              <span className="text-sm font-light text-[#8892a0]">
-                新增書籤時自動生成 AI 摘要
-              </span>
+              <span className="text-sm font-light text-[#8892a0]">新增書籤時自動生成 AI 摘要</span>
             </div>
             <ToggleSwitch checked={autoSummary} onChange={setAutoSummary} />
           </div>
@@ -109,9 +101,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
           <div className="flex items-center justify-between border-t border-[#234567] py-3">
             <div className="flex flex-col">
               <span className="text-base font-medium text-[#e8f0f7]">自動生成標籤</span>
-              <span className="text-sm font-light text-[#8892a0]">
-                AI 根據內容自動建議標籤
-              </span>
+              <span className="text-sm font-light text-[#8892a0]">AI 根據內容自動建議標籤</span>
             </div>
             <ToggleSwitch checked={autoTags} onChange={setAutoTags} />
           </div>

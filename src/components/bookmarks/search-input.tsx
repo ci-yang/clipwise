@@ -185,7 +185,10 @@ export function CompactSearchInput({
   isLoading = false,
   placeholder = '搜尋...',
   className,
-}: Pick<SearchInputProps, 'defaultValue' | 'onSearch' | 'isLoading' | 'placeholder' | 'className'>) {
+}: Pick<
+  SearchInputProps,
+  'defaultValue' | 'onSearch' | 'isLoading' | 'placeholder' | 'className'
+>) {
   const [isExpanded, setIsExpanded] = useState(!!defaultValue);
 
   const handleExpand = () => {

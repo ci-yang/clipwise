@@ -9,7 +9,12 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { validateUrl } from '@/lib/url-validator';
 import { checkBookmarkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
-import { createBookmark, listBookmarks, checkUrlExists } from '@/services/bookmark.service';
+import {
+  createBookmark,
+  listBookmarks,
+  checkUrlExists,
+  type SearchField,
+} from '@/services/bookmark.service';
 
 /**
  * POST /api/bookmarks - Create a new bookmark
@@ -104,6 +109,12 @@ export async function GET(request: Request) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q') || undefined;
+    const searchFieldParam = searchParams.get('field');
+    const searchField: SearchField = ['all', 'title', 'summary', 'tags'].includes(
+      searchFieldParam || ''
+    )
+      ? (searchFieldParam as SearchField)
+      : 'all';
     const tagId = searchParams.get('tagId') || undefined;
     const cursor = searchParams.get('cursor') || undefined;
     const limitParam = searchParams.get('limit');
@@ -118,6 +129,7 @@ export async function GET(request: Request) {
     const result = await listBookmarks({
       userId,
       query,
+      searchField,
       tagId,
       cursor,
       limit,

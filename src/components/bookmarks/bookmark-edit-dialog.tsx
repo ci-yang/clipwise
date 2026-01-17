@@ -154,10 +154,7 @@ export function BookmarkEditDialog({
                   className="inline-flex items-center gap-1.5 rounded-lg bg-[rgba(0,212,255,0.2)] px-3 py-1.5 text-sm font-light text-[#00d4ff]"
                 >
                   {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="hover:text-white"
-                  >
+                  <button onClick={() => handleRemoveTag(tag)} className="hover:text-white">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </span>
@@ -171,10 +168,7 @@ export function BookmarkEditDialog({
                   className="w-20 bg-transparent text-sm text-[#e8f0f7] placeholder:text-[#8892a0] focus:outline-none"
                   placeholder="新增標籤"
                 />
-                <button
-                  onClick={handleAddTag}
-                  className="text-[#8892a0] hover:text-[#00d4ff]"
-                >
+                <button onClick={handleAddTag} className="text-[#8892a0] hover:text-[#00d4ff]">
                   <Plus className="h-3.5 w-3.5" />
                 </button>
               </div>

@@ -5,7 +5,9 @@
  * Design specs from Figma:
  * - Bottom Tab Bar: h-16 bg-[#132337] border-t border-[#234567]
  * - FAB: w-14 h-14 bg-[#00d4ff] rounded-full shadow
- * - Active tab: text-[#00d4ff], Inactive: text-[#8892a0]
+ * - Active tab: text-[#00d4ff] font-medium 14px
+ * - Inactive tab: text-[#8892a0] font-[350] 14px
+ * - Only text labels, no icons (except FAB)
  */
 
 'use client';
@@ -13,22 +15,21 @@
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bookmark, Search, Tag, Settings, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BookmarkInputDialog } from '@/components/bookmarks/bookmark-input-dialog';
 
 interface NavItem {
   label: string;
   href: string;
-  icon: typeof Bookmark;
 }
 
 const navItems: NavItem[] = [
-  { label: '書籤', href: '/bookmarks', icon: Bookmark },
-  { label: '搜尋', href: '/search', icon: Search },
+  { label: '書籤', href: '/bookmarks' },
+  { label: '搜尋', href: '/search' },
   // FAB placeholder
-  { label: '標籤', href: '/tags', icon: Tag },
-  { label: '設定', href: '/settings', icon: Settings },
+  { label: '標籤', href: '/tags' },
+  { label: '設定', href: '/settings' },
 ];
 
 export function MobileNav() {
@@ -54,18 +55,17 @@ export function MobileNav() {
       {/* Bottom Navigation Bar - Mobile Only */}
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[#234567] bg-[#132337] md:hidden">
         <div className="flex h-16 items-center">
-          {/* Left side nav items */}
+          {/* Left side nav items - Text only per Figma design */}
           {navItems.slice(0, 2).map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-1 flex-col items-center justify-center gap-1',
-                isActive(item.href) ? 'text-[#00d4ff]' : 'text-[#8892a0]'
+                'flex flex-1 flex-col items-center justify-center',
+                isActive(item.href) ? 'font-medium text-[#00d4ff]' : 'font-[350] text-[#8892a0]'
               )}
             >
-              <item.icon className="h-5 w-5" />
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-sm leading-5">{item.label}</span>
             </Link>
           ))}
 
@@ -73,25 +73,24 @@ export function MobileNav() {
           <div className="relative h-8 w-14">
             <button
               onClick={() => setIsAddOpen(true)}
-              className="absolute left-0 top-[-24px] flex h-14 w-14 items-center justify-center rounded-full bg-[#00d4ff] shadow-[0px_10px_15px_-3px_rgba(0,212,255,0.3),0px_4px_6px_-4px_rgba(0,212,255,0.3)] transition-transform hover:scale-105 active:scale-95"
+              className="absolute top-[-24px] left-0 flex h-14 w-14 items-center justify-center rounded-full bg-[#00d4ff] shadow-[0px_10px_15px_-3px_rgba(0,212,255,0.3),0px_4px_6px_-4px_rgba(0,212,255,0.3)] transition-transform hover:scale-105 active:scale-95"
               aria-label="新增書籤"
             >
               <Plus className="h-6 w-6 text-[#0a1628]" />
             </button>
           </div>
 
-          {/* Right side nav items */}
+          {/* Right side nav items - Text only per Figma design */}
           {navItems.slice(2).map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-1 flex-col items-center justify-center gap-1',
-                isActive(item.href) ? 'text-[#00d4ff]' : 'text-[#8892a0]'
+                'flex flex-1 flex-col items-center justify-center',
+                isActive(item.href) ? 'font-medium text-[#00d4ff]' : 'font-[350] text-[#8892a0]'
               )}
             >
-              <item.icon className="h-5 w-5" />
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-sm leading-5">{item.label}</span>
             </Link>
           ))}
         </div>

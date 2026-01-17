@@ -9,12 +9,7 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { X, Link2, Loader2, Sparkles } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 interface BookmarkInputDialogProps {
@@ -23,11 +18,7 @@ interface BookmarkInputDialogProps {
   onSuccess?: () => void;
 }
 
-export function BookmarkInputDialog({
-  open,
-  onOpenChange,
-  onSuccess,
-}: BookmarkInputDialogProps) {
+export function BookmarkInputDialog({ open, onOpenChange, onSuccess }: BookmarkInputDialogProps) {
   const router = useRouter();
   const [url, setUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

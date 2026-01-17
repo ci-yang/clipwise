@@ -28,9 +28,19 @@ export interface UpdateBookmarkInput {
   title?: string;
 }
 
+/**
+ * 搜尋欄位類型
+ * - all: 搜尋所有欄位
+ * - title: 只搜尋標題
+ * - summary: 只搜尋摘要
+ * - tags: 只搜尋標籤
+ */
+export type SearchField = 'all' | 'title' | 'summary' | 'tags';
+
 export interface ListBookmarksInput {
   userId: string;
   query?: string;
+  searchField?: SearchField;
   tagId?: string;
   cursor?: string;
   limit?: number;
@@ -212,28 +222,73 @@ export async function deleteBookmark(bookmarkId: string, userId: string): Promis
  * List bookmarks with pagination and filtering
  */
 export async function listBookmarks(input: ListBookmarksInput): Promise<ListBookmarksResult> {
-  const { userId, query, tagId, cursor, limit = 20 } = input;
+  const { userId, query, searchField = 'all', tagId, cursor, limit = 20 } = input;
   const take = Math.min(limit, 50); // Max 50 per page
 
   // Build where clause
   const where: Prisma.BookmarkWhereInput = { userId };
 
-  // Search query (title, description, aiSummary)
+  // Search query based on field type
   if (query) {
-    where.AND = [
-      {
-        OR: [
-          { title: { contains: query, mode: 'insensitive' } },
-          { description: { contains: query, mode: 'insensitive' } },
-          { aiSummary: { contains: query, mode: 'insensitive' } },
-        ],
-      },
-    ];
+    switch (searchField) {
+      case 'title':
+        where.AND = [{ title: { contains: query, mode: 'insensitive' } }];
+        break;
+      case 'summary':
+        where.AND = [
+          {
+            OR: [
+              { description: { contains: query, mode: 'insensitive' } },
+              { aiSummary: { contains: query, mode: 'insensitive' } },
+            ],
+          },
+        ];
+        break;
+      case 'tags':
+        // Search by tag name
+        where.tags = {
+          some: {
+            tag: {
+              name: { contains: query, mode: 'insensitive' },
+            },
+          },
+        };
+        break;
+      case 'all':
+      default:
+        // Search all fields (title, description, aiSummary)
+        where.AND = [
+          {
+            OR: [
+              { title: { contains: query, mode: 'insensitive' } },
+              { description: { contains: query, mode: 'insensitive' } },
+              { aiSummary: { contains: query, mode: 'insensitive' } },
+              // Also include tag name search
+              {
+                tags: {
+                  some: {
+                    tag: {
+                      name: { contains: query, mode: 'insensitive' },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        ];
+        break;
+    }
   }
 
-  // Tag filter
+  // Additional tag filter (separate from search)
   if (tagId) {
-    where.tags = { some: { tagId } };
+    if (where.tags) {
+      // Already have tag condition from search, add AND
+      where.AND = [...(Array.isArray(where.AND) ? where.AND : []), { tags: { some: { tagId } } }];
+      delete where.tags;
+    } else {
+      where.tags = { some: { tagId } };
+    }
   }
 
   // Get total count

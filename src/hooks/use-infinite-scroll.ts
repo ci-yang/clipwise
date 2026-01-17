@@ -106,12 +106,9 @@ export function useInfiniteScroll<T>({
   }, []);
 
   // Update item function
-  const updateItem = useCallback(
-    (predicate: (item: T) => boolean, updater: (item: T) => T) => {
-      setData((prev) => prev.map((item) => (predicate(item) ? updater(item) : item)));
-    },
-    []
-  );
+  const updateItem = useCallback((predicate: (item: T) => boolean, updater: (item: T) => T) => {
+    setData((prev) => prev.map((item) => (predicate(item) ? updater(item) : item)));
+  }, []);
 
   // Setup intersection observer
   useEffect(() => {

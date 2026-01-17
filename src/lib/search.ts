@@ -186,9 +186,7 @@ export function buildSearchQuery(
 /**
  * 建構高亮選項
  */
-export function buildHighlightOptions(
-  options: Partial<HighlightOptions> = {}
-): HighlightOptions {
+export function buildHighlightOptions(options: Partial<HighlightOptions> = {}): HighlightOptions {
   return {
     startTag: options.startTag ?? SearchQueryConfig.highlightStartTag,
     endTag: options.endTag ?? SearchQueryConfig.highlightEndTag,

@@ -15,13 +15,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import {
-  ExternalLink,
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-  Globe,
-} from 'lucide-react';
+import { ExternalLink, MoreHorizontal, Pencil, Trash2, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BookmarkViewDialog } from './bookmark-view-dialog';
 import { BookmarkEditDialog } from './bookmark-edit-dialog';
@@ -66,7 +60,11 @@ const formatRelativeTime = (date: Date | string): string => {
   return target.toLocaleDateString('zh-TW');
 };
 
-export function BookmarkListCard({ bookmark: initialBookmark, onUpdate, onDelete }: BookmarkListCardProps) {
+export function BookmarkListCard({
+  bookmark: initialBookmark,
+  onUpdate,
+  onDelete,
+}: BookmarkListCardProps) {
   // Local bookmark state for immediate updates
   const [bookmark, setBookmark] = useState<BookmarkWithTags>(initialBookmark);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -185,9 +183,7 @@ export function BookmarkListCard({ bookmark: initialBookmark, onUpdate, onDelete
           </div>
         );
       case 'FAILED':
-        return (
-          <span className="text-sm text-[rgba(251,191,36,0.8)]">AI 無法處理此連結</span>
-        );
+        return <span className="text-sm text-[rgba(251,191,36,0.8)]">AI 無法處理此連結</span>;
       default:
         return null;
     }
@@ -195,6 +191,24 @@ export function BookmarkListCard({ bookmark: initialBookmark, onUpdate, onDelete
 
   // Tags rendering
   const renderTags = () => {
+    // If tags exist, show them regardless of AI status
+    if (bookmark.tags.length > 0) {
+      return bookmark.tags.slice(0, 3).map((tag) => (
+        <span
+          key={tag.id}
+          className={cn(
+            'inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-light',
+            'isAiGenerated' in tag && tag.isAiGenerated
+              ? 'bg-[rgba(0,212,255,0.15)] text-[#00d4ff]'
+              : 'bg-[rgba(19,78,74,0.3)] text-[#34d399]'
+          )}
+        >
+          {tag.name}
+        </span>
+      ));
+    }
+
+    // Only show loading if AI is processing and no tags exist yet
     if (bookmark.aiStatus === 'PENDING' || bookmark.aiStatus === 'PROCESSING') {
       return (
         <span className="inline-flex items-center rounded-lg bg-[rgba(136,146,160,0.2)] px-2.5 py-1 text-xs text-[#8892a0]">
@@ -203,33 +217,18 @@ export function BookmarkListCard({ bookmark: initialBookmark, onUpdate, onDelete
       );
     }
 
-    if (bookmark.tags.length === 0) {
-      return (
-        <span className="inline-flex items-center rounded-lg bg-[rgba(136,146,160,0.2)] px-2.5 py-1 text-xs text-[#8892a0]">
-          未分類
-        </span>
-      );
-    }
-
-    return bookmark.tags.slice(0, 3).map((tag) => (
-      <span
-        key={tag.id}
-        className={cn(
-          'inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-light',
-          'isAiGenerated' in tag && tag.isAiGenerated
-            ? 'bg-[rgba(0,212,255,0.15)] text-[#00d4ff]'
-            : 'bg-[rgba(19,78,74,0.3)] text-[#34d399]'
-        )}
-      >
-        {tag.name}
+    // No tags and AI is done
+    return (
+      <span className="inline-flex items-center rounded-lg bg-[rgba(136,146,160,0.2)] px-2.5 py-1 text-xs text-[#8892a0]">
+        未分類
       </span>
-    ));
+    );
   };
 
   return (
     <article className="group relative h-[178px] overflow-hidden rounded-2xl border border-[#234567] bg-[#132337] transition-all hover:border-[#00d4ff]/50 hover:shadow-lg hover:shadow-[#00d4ff]/5">
       {/* Header: Favicon + Domain + Timestamp */}
-      <div className="absolute left-5 right-5 top-5 flex items-center gap-3">
+      <div className="absolute top-5 right-5 left-5 flex items-center gap-3">
         {/* Favicon/Emoji */}
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
@@ -252,7 +251,7 @@ export function BookmarkListCard({ bookmark: initialBookmark, onUpdate, onDelete
         </div>
 
         {/* Domain */}
-        <span className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-[#8892a0]">
+        <span className="overflow-hidden text-sm text-ellipsis whitespace-nowrap text-[#8892a0]">
           {bookmark.domain}
         </span>
 
@@ -263,30 +262,26 @@ export function BookmarkListCard({ bookmark: initialBookmark, onUpdate, onDelete
       </div>
 
       {/* Title */}
-      <div className="absolute left-5 right-5 top-16">
+      <div className="absolute top-16 right-5 left-5">
         <h3 className="line-clamp-1 text-base font-medium text-[#e8f0f7]">
           {bookmark.title || bookmark.url}
         </h3>
       </div>
 
       {/* Summary or AI Status */}
-      <div className="absolute left-5 right-5 top-24">
+      <div className="absolute top-24 right-5 left-5">
         {bookmark.aiStatus === 'COMPLETED' && bookmark.aiSummary ? (
-          <p className="line-clamp-1 text-sm font-light text-[#8892a0]">
-            {bookmark.aiSummary}
-          </p>
+          <p className="line-clamp-1 text-sm font-light text-[#8892a0]">{bookmark.aiSummary}</p>
         ) : (
           renderAiStatus()
         )}
       </div>
 
       {/* Tags */}
-      <div className="absolute bottom-5 left-5 right-5 flex flex-wrap gap-2">
-        {renderTags()}
-      </div>
+      <div className="absolute right-5 bottom-5 left-5 flex flex-wrap gap-2">{renderTags()}</div>
 
       {/* Actions Overlay */}
-      <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="absolute top-2 right-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <a
           href={bookmark.url}
           target="_blank"
@@ -313,7 +308,7 @@ export function BookmarkListCard({ bookmark: initialBookmark, onUpdate, onDelete
       {isMenuOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsMenuOpen(false)} />
-          <div className="absolute right-2 top-12 z-20 w-36 rounded-xl border border-[#234567] bg-[#132337] p-1 shadow-lg">
+          <div className="absolute top-12 right-2 z-20 w-36 rounded-xl border border-[#234567] bg-[#132337] p-1 shadow-lg">
             <button
               onClick={openEditDialog}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-[#8892a0] hover:bg-[#234567]/30 hover:text-[#e8f0f7]"

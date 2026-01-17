@@ -50,9 +50,7 @@ export async function fetchMetaWithCache(url: string): Promise<CachedMetaResult>
 /**
  * Get cached meta data if not expired
  */
-async function getCachedMeta(
-  url: string
-): Promise<{ meta: MetaInfo; cachedAt: Date } | null> {
+async function getCachedMeta(url: string): Promise<{ meta: MetaInfo; cachedAt: Date } | null> {
   try {
     const cached = await prisma.urlCache.findUnique({
       where: { url },

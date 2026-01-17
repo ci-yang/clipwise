@@ -62,10 +62,7 @@ export function TagFilter({
     return (
       <div className={cn('flex gap-2', className)}>
         {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="bg-muted h-9 w-20 animate-pulse rounded-full"
-          />
+          <div key={i} className="bg-muted h-9 w-20 animate-pulse rounded-full" />
         ))}
       </div>
     );
@@ -78,11 +75,7 @@ export function TagFilter({
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted-foreground text-sm">已選：</span>
           {selectedTags.map((tag) => (
-            <SelectedTagBadge
-              key={tag.id}
-              tag={tag}
-              onRemove={() => onTagToggle(tag.id)}
-            />
+            <SelectedTagBadge key={tag.id} tag={tag} onRemove={() => onTagToggle(tag.id)} />
           ))}
           {onClearAll && (
             <button
@@ -108,9 +101,7 @@ export function TagFilter({
             />
           );
         })}
-        {tags.length === 0 && (
-          <span className="text-muted-foreground text-sm">尚無標籤</span>
-        )}
+        {tags.length === 0 && <span className="text-muted-foreground text-sm">尚無標籤</span>}
       </div>
     </div>
   );
@@ -137,12 +128,7 @@ function TagButton({ tag, isSelected, onClick }: TagButtonProps) {
       )}
     >
       <span>{tag.name}</span>
-      <span
-        className={cn(
-          'text-sm',
-          isSelected ? 'text-background/70' : 'text-muted-foreground'
-        )}
-      >
+      <span className={cn('text-sm', isSelected ? 'text-background/70' : 'text-muted-foreground')}>
         {tag.count}
       </span>
     </button>
@@ -195,10 +181,7 @@ export function TagFilterBar({
     return (
       <div className={cn('flex gap-2 overflow-x-auto pb-2', className)}>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className="bg-muted h-9 w-24 shrink-0 animate-pulse rounded-full"
-          />
+          <div key={i} className="bg-muted h-9 w-24 shrink-0 animate-pulse rounded-full" />
         ))}
       </div>
     );
@@ -253,15 +236,8 @@ interface TagCloudProps {
 
 export function TagCloud({ title = '所有標籤', children, className }: TagCloudProps) {
   return (
-    <div
-      className={cn(
-        'glass border-border rounded-xl border p-6',
-        className
-      )}
-    >
-      {title && (
-        <h2 className="text-foreground mb-4 text-lg font-bold">{title}</h2>
-      )}
+    <div className={cn('glass border-border rounded-xl border p-6', className)}>
+      {title && <h2 className="text-foreground mb-4 text-lg font-bold">{title}</h2>}
       {children}
     </div>
   );

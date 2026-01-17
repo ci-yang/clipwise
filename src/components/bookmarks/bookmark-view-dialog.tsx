@@ -112,9 +112,7 @@ export function BookmarkViewDialog({
         <div className="flex max-h-[60vh] flex-col gap-5 overflow-auto p-6">
           {/* Title */}
           <div>
-            <h3 className="text-xl font-bold text-[#e8f0f7]">
-              {bookmark.title || bookmark.url}
-            </h3>
+            <h3 className="text-xl font-bold text-[#e8f0f7]">{bookmark.title || bookmark.url}</h3>
           </div>
 
           {/* Summary or AI Status */}
@@ -123,9 +121,7 @@ export function BookmarkViewDialog({
             {displaySummary ? (
               <p className="text-sm leading-relaxed text-[#e8f0f7]">{displaySummary}</p>
             ) : (
-              renderAiStatus() || (
-                <p className="text-sm text-[#8892a0]">尚無摘要</p>
-              )
+              renderAiStatus() || <p className="text-sm text-[#8892a0]">尚無摘要</p>
             )}
           </div>
 
@@ -157,11 +153,7 @@ export function BookmarkViewDialog({
                 className="shrink-0 text-[#00d4ff] hover:text-[#00d4ff]/80"
                 title="複製連結"
               >
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </button>
             </div>
           </div>

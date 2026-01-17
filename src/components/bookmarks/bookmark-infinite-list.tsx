@@ -108,11 +108,7 @@ export function BookmarkInfiniteList({
       {/* Bookmark Grid - 2 column layout matching Figma */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {bookmarks.map((bookmark) => (
-          <BookmarkListCard
-            key={bookmark.id}
-            bookmark={bookmark}
-            onDelete={handleDelete}
-          />
+          <BookmarkListCard key={bookmark.id} bookmark={bookmark} onDelete={handleDelete} />
         ))}
 
         {/* Loading skeletons */}

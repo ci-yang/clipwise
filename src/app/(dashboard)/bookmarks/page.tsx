@@ -69,11 +69,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
       <TagFilterContainer className="scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6" />
 
       {/* Bookmark List with Infinite Scroll */}
-      <BookmarkListContainerWithData
-        result={initialResult}
-        query={params.q}
-        tagId={params.tagId}
-      />
+      <BookmarkListContainerWithData result={initialResult} query={params.q} tagId={params.tagId} />
 
       {/* Add Bookmark Modal (controlled by URL param) */}
       {showAddModal && <BookmarkInput defaultOpen />}

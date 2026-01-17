@@ -173,7 +173,7 @@ describe('Search Query Edge Cases', () => {
   });
 
   it('should handle newlines and tabs', () => {
-    const input = "hello\nworld\ttab";
+    const input = 'hello\nworld\ttab';
     const result = parseSearchInput(input);
     expect(result).not.toContain('\n');
     expect(result).not.toContain('\t');

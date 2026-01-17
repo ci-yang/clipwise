@@ -57,7 +57,7 @@ export function DeleteConfirmDialog({
       {/* Dialog */}
       <div className="relative w-full max-w-[400px] overflow-hidden rounded-2xl border border-[#234567] bg-[rgba(19,35,55,0.95)] shadow-2xl backdrop-blur-lg">
         {/* Content */}
-        <div className="flex flex-col items-center px-6 pb-6 pt-8">
+        <div className="flex flex-col items-center px-6 pt-8 pb-6">
           {/* Warning Icon */}
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[rgba(239,68,68,0.2)]">
             <AlertTriangle className="h-7 w-7 text-[#ef4444]" />
@@ -78,9 +78,7 @@ export function DeleteConfirmDialog({
                 <Sparkles className="h-5 w-5 text-[#00d4ff]" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-[#e8f0f7]">
-                  {bookmarkTitle}
-                </p>
+                <p className="truncate text-sm font-medium text-[#e8f0f7]">{bookmarkTitle}</p>
                 {bookmarkDomain && (
                   <p className="truncate text-xs text-[#8892a0]">{bookmarkDomain}</p>
                 )}
