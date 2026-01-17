@@ -354,3 +354,42 @@ export async function searchTags(
     take: limit,
   });
 }
+
+/**
+ * Alias for normalizeTag for better API naming
+ */
+export const normalizeTagName = normalizeTag;
+
+/**
+ * Find or create a tag within a transaction
+ */
+export async function findOrCreateTag(
+  userId: string,
+  name: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tx?: any
+): Promise<Tag> {
+  const db = tx || prisma;
+  const normalizedName = normalizeTag(name);
+
+  // Try to find existing tag
+  const existing = await db.tag.findFirst({
+    where: {
+      userId,
+      nameLower: normalizedName,
+    },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  // Create new tag
+  return db.tag.create({
+    data: {
+      name: name.trim(),
+      nameLower: normalizedName,
+      userId,
+    },
+  });
+}

@@ -15,19 +15,22 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import Link from 'next/link';
 import {
   ExternalLink,
   MoreHorizontal,
-  Star,
+  Pencil,
   Trash2,
   Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BookmarkEditDialog } from './bookmark-edit-dialog';
+import { DeleteConfirmDialog } from './delete-confirm-dialog';
 import type { BookmarkWithTags } from '@/services/bookmark.service';
 
 interface BookmarkListCardProps {
   bookmark: BookmarkWithTags;
+  onUpdate?: (bookmark: BookmarkWithTags) => void;
+  onDelete?: (bookmarkId: string) => void;
 }
 
 // Emoji backgrounds based on domain category
@@ -62,8 +65,10 @@ const formatRelativeTime = (date: Date | string): string => {
   return target.toLocaleDateString('zh-TW');
 };
 
-export function BookmarkListCard({ bookmark }: BookmarkListCardProps) {
+export function BookmarkListCard({ bookmark, onUpdate, onDelete }: BookmarkListCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const domainStyle = getDomainStyle(bookmark.domain || '');
 
   const formatTime = useCallback((date: Date | string) => {
@@ -72,6 +77,60 @@ export function BookmarkListCard({ bookmark }: BookmarkListCardProps) {
     } catch {
       return '';
     }
+  }, []);
+
+  const handleSave = useCallback(
+    async (data: { title: string; description: string; tags: string[] }) => {
+      // Update bookmark
+      const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: data.title, description: data.description }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update bookmark');
+      }
+
+      // Update tags
+      await fetch(`/api/bookmarks/${bookmark.id}/tags`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tags: data.tags }),
+      });
+
+      // Notify parent
+      if (onUpdate) {
+        const result = await response.json();
+        onUpdate(result.bookmark);
+      }
+    },
+    [bookmark.id, onUpdate]
+  );
+
+  const handleDelete = useCallback(async () => {
+    const response = await fetch(`/api/bookmarks/${bookmark.id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete bookmark');
+    }
+
+    // Notify parent
+    if (onDelete) {
+      onDelete(bookmark.id);
+    }
+  }, [bookmark.id, onDelete]);
+
+  const openEditDialog = useCallback(() => {
+    setIsMenuOpen(false);
+    setIsEditOpen(true);
+  }, []);
+
+  const openDeleteDialog = useCallback(() => {
+    setIsMenuOpen(false);
+    setIsDeleteOpen(true);
   }, []);
 
   // AI Status indicator
@@ -217,11 +276,17 @@ export function BookmarkListCard({ bookmark }: BookmarkListCardProps) {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsMenuOpen(false)} />
           <div className="absolute right-2 top-12 z-20 w-36 rounded-xl border border-[#234567] bg-[#132337] p-1 shadow-lg">
-            <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-[#8892a0] hover:bg-[#234567]/30 hover:text-[#e8f0f7]">
-              <Star className="h-4 w-4" />
-              收藏
+            <button
+              onClick={openEditDialog}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-[#8892a0] hover:bg-[#234567]/30 hover:text-[#e8f0f7]"
+            >
+              <Pencil className="h-4 w-4" />
+              編輯
             </button>
-            <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10">
+            <button
+              onClick={openDeleteDialog}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10"
+            >
               <Trash2 className="h-4 w-4" />
               刪除
             </button>
@@ -229,11 +294,29 @@ export function BookmarkListCard({ bookmark }: BookmarkListCardProps) {
         </>
       )}
 
-      {/* Click Area Link */}
-      <Link
-        href={`/bookmarks/${bookmark.id}`}
+      {/* Click Area - Opens Edit Dialog */}
+      <button
+        onClick={openEditDialog}
         className="absolute inset-0 z-0"
-        aria-label={`查看 ${bookmark.title || bookmark.url} 詳情`}
+        aria-label={`編輯 ${bookmark.title || bookmark.url}`}
+      />
+
+      {/* Edit Dialog */}
+      <BookmarkEditDialog
+        bookmark={bookmark}
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        onSave={handleSave}
+        onDelete={openDeleteDialog}
+      />
+
+      {/* Delete Confirm Dialog */}
+      <DeleteConfirmDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        onConfirm={handleDelete}
+        bookmarkTitle={bookmark.title || bookmark.url}
+        bookmarkDomain={bookmark.domain || undefined}
       />
     </article>
   );
