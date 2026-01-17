@@ -1,7 +1,10 @@
 {
   "$schema": "https://schema.zeabur.app/zeabur.json",
   "build": {
-    "type": "nextjs"
+    "type": "nextjs",
+    "buildEnv": {
+      "DATABASE_URL": "postgresql://placeholder:placeholder@localhost:5432/placeholder"
+    }
   },
   "serverless": false,
   "environment": {
