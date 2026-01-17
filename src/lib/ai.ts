@@ -6,14 +6,16 @@
 import OpenAI from 'openai';
 
 // Initialize OpenAI client configured for Zeabur AI Hub
+// Tokyo endpoint (hnd1) for lower latency in Asia region
 const openai = new OpenAI({
   apiKey: process.env.ZEABUR_AI_API_KEY || '',
-  baseURL: 'https://llm.zeabur.com/v1',
+  baseURL: 'https://hnd1.aihub.zeabur.ai/v1',
 });
 
 // AI Model configuration
+// gpt-4.1-mini: 1M context window, fast latency, supports tool use
 const AI_CONFIG = {
-  model: 'gpt-4o-mini',
+  model: 'gpt-4.1-mini',
   maxTokens: 500,
   temperature: 0.7,
   timeout: 10000, // 10 seconds

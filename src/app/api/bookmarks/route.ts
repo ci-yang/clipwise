@@ -5,7 +5,7 @@
  * T042: POST /api/bookmarks 端點
  */
 
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { auth } from '@/lib/auth';
 import { validateUrl } from '@/lib/url-validator';
 import { checkBookmarkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
@@ -15,6 +15,7 @@ import {
   checkUrlExists,
   type SearchField,
 } from '@/services/bookmark.service';
+import { processBookmarkWithAi } from '@/services/ai.service';
 
 /**
  * POST /api/bookmarks - Create a new bookmark
@@ -81,6 +82,16 @@ export async function POST(request: Request) {
     const bookmark = await createBookmark({
       userId,
       url: body.url,
+    });
+
+    // Trigger AI processing in background (non-blocking)
+    // Uses Next.js after() API to run after response is sent
+    after(async () => {
+      try {
+        await processBookmarkWithAi(bookmark.id, userId);
+      } catch (error) {
+        console.error('Background AI processing failed:', error);
+      }
     });
 
     return NextResponse.json(bookmark, {
