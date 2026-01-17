@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { BookmarkListCard } from './bookmark-list-card';
 import { BookmarkSkeleton } from './bookmark-skeleton';
 import { EmptyState } from './empty-state';
@@ -66,12 +66,25 @@ export function BookmarkInfiniteList({
     error,
     loadMoreRef,
     loadMore,
+    removeItem,
   } = useInfiniteScroll<BookmarkWithTags>({
     initialData: initialBookmarks,
     initialCursor,
     initialHasMore: initialCursor !== null,
     fetchMore,
   });
+
+  // Track count locally for display
+  const [displayCount, setDisplayCount] = useState(totalCount);
+
+  // Handle bookmark deletion
+  const handleDelete = useCallback(
+    (bookmarkId: string) => {
+      removeItem((bookmark) => bookmark.id === bookmarkId);
+      setDisplayCount((prev) => Math.max(0, prev - 1));
+    },
+    [removeItem]
+  );
 
   // Empty state
   if (bookmarks.length === 0 && !isLoading) {
@@ -88,14 +101,18 @@ export function BookmarkInfiniteList({
     <div className="space-y-4">
       {/* Results Count */}
       <p className="text-muted-foreground text-sm">
-        共 {totalCount} 個書籤
+        共 {displayCount} 個書籤
         {query && ` (搜尋: "${query}")`}
       </p>
 
       {/* Bookmark Grid - 2 column layout matching Figma */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {bookmarks.map((bookmark) => (
-          <BookmarkListCard key={bookmark.id} bookmark={bookmark} />
+          <BookmarkListCard
+            key={bookmark.id}
+            bookmark={bookmark}
+            onDelete={handleDelete}
+          />
         ))}
 
         {/* Loading skeletons */}

@@ -138,7 +138,12 @@ export function BookmarkListCard({ bookmark: initialBookmark, onUpdate, onDelete
       throw new Error('Failed to delete bookmark');
     }
 
-    // Notify parent
+    // Close all dialogs
+    setIsDeleteOpen(false);
+    setIsEditOpen(false);
+    setIsViewOpen(false);
+
+    // Notify parent to remove from list
     if (onDelete) {
       onDelete(bookmark.id);
     }

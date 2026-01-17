@@ -43,6 +43,10 @@ interface UseInfiniteScrollReturn<T> {
   loadMore: () => void;
   /** 重置狀態 */
   reset: (newData: T[], newCursor: string | null) => void;
+  /** 移除項目 */
+  removeItem: (predicate: (item: T) => boolean) => void;
+  /** 更新項目 */
+  updateItem: (predicate: (item: T) => boolean, updater: (item: T) => T) => void;
 }
 
 export function useInfiniteScroll<T>({
@@ -96,6 +100,19 @@ export function useInfiniteScroll<T>({
     setError(null);
   }, []);
 
+  // Remove item function
+  const removeItem = useCallback((predicate: (item: T) => boolean) => {
+    setData((prev) => prev.filter((item) => !predicate(item)));
+  }, []);
+
+  // Update item function
+  const updateItem = useCallback(
+    (predicate: (item: T) => boolean, updater: (item: T) => T) => {
+      setData((prev) => prev.map((item) => (predicate(item) ? updater(item) : item)));
+    },
+    []
+  );
+
   // Setup intersection observer
   useEffect(() => {
     const handleObserver = (entries: IntersectionObserverEntry[]) => {
@@ -142,5 +159,7 @@ export function useInfiniteScroll<T>({
     loadMoreRef,
     loadMore,
     reset,
+    removeItem,
+    updateItem,
   };
 }
