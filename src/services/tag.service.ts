@@ -361,6 +361,11 @@ export async function searchTags(
 export const normalizeTagName = normalizeTag;
 
 /**
+ * Alias for getUserTags for tags page
+ */
+export const getTagsWithCount = getUserTags;
+
+/**
  * Find or create a tag within a transaction
  */
 export async function findOrCreateTag(

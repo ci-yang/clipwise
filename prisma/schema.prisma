@@ -142,3 +142,17 @@ enum AiStatus {
   COMPLETED
   FAILED
 }
+
+// ============================================
+// Caching Models
+// ============================================
+
+model UrlCache {
+  id       String   @id @default(cuid())
+  url      String   @unique
+  meta     Json
+  cachedAt DateTime @default(now()) @map("cached_at")
+
+  @@index([cachedAt])
+  @@map("url_cache")
+}

@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
-import { fetchMeta } from '@/lib/meta-fetcher';
+import { fetchMetaWithCache } from '@/lib/url-cache';
 import { normalizeUrl, extractDomain } from '@/lib/url-validator';
 import type { Bookmark, AiStatus, Tag, Prisma } from '@prisma/client';
 
@@ -92,7 +92,8 @@ export async function createBookmark(input: CreateBookmarkInput): Promise<Bookma
   };
 
   try {
-    const fetchedMeta = await fetchMeta(url);
+    // Use cached meta fetch to avoid redundant requests (FR-033)
+    const { meta: fetchedMeta } = await fetchMetaWithCache(url);
     metaInfo = {
       title: fetchedMeta.title,
       description: fetchedMeta.description,
