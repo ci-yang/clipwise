@@ -29,7 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Header */}
         <DashboardHeader user={session.user} />
 
