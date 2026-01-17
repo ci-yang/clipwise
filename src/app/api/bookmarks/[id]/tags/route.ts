@@ -67,7 +67,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           data: tagRecords.map((tag) => ({
             bookmarkId: id,
             tagId: tag.id,
-            isAiGenerated: false, // Manual tags are not AI generated
           })),
           skipDuplicates: true,
         });
