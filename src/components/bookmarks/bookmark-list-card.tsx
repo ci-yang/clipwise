@@ -14,7 +14,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ExternalLink, MoreHorizontal, Pencil, Trash2, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BookmarkViewDialog } from './bookmark-view-dialog';
@@ -72,6 +72,54 @@ export function BookmarkListCard({
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const domainStyle = getDomainStyle(bookmark.domain || '');
+
+  // Poll for AI status updates if still processing
+  useEffect(() => {
+    // Only poll if AI is still processing and not stale
+    if (bookmark.aiStatus !== 'PENDING' && bookmark.aiStatus !== 'PROCESSING') {
+      return;
+    }
+
+    // Check if stale (more than 5 minutes old)
+    const createdAt = new Date(bookmark.createdAt);
+    const diffMinutes = (Date.now() - createdAt.getTime()) / (1000 * 60);
+    if (diffMinutes > 5) {
+      return;
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/ai/status/${bookmark.id}`);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (data.status !== bookmark.aiStatus || data.summary !== bookmark.aiSummary) {
+          // Re-fetch full bookmark data to get tags
+          const bookmarkResponse = await fetch(`/api/bookmarks/${bookmark.id}`);
+          if (bookmarkResponse.ok) {
+            const result = await bookmarkResponse.json();
+            // API returns { bookmark: {...} } format
+            const updatedBookmark = result.bookmark;
+            if (updatedBookmark && updatedBookmark.tags) {
+              setBookmark(updatedBookmark);
+              if (onUpdate) {
+                onUpdate(updatedBookmark);
+              }
+            }
+          }
+        }
+
+        // Stop polling if AI is done
+        if (data.status === 'COMPLETED' || data.status === 'FAILED') {
+          clearInterval(pollInterval);
+        }
+      } catch (error) {
+        console.error('AI status poll error:', error);
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [bookmark.id, bookmark.aiStatus, bookmark.aiSummary, bookmark.createdAt, onUpdate]);
 
   const formatTime = useCallback((date: Date | string) => {
     try {
@@ -169,8 +217,24 @@ export function BookmarkListCard({
     setIsDeleteOpen(true);
   }, []);
 
+  // Check if bookmark is stale (pending for more than 5 minutes)
+  const isStale = () => {
+    if (bookmark.aiStatus !== 'PENDING' && bookmark.aiStatus !== 'PROCESSING') {
+      return false;
+    }
+    const createdAt = new Date(bookmark.createdAt);
+    const now = new Date();
+    const diffMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60);
+    return diffMinutes > 5;
+  };
+
   // AI Status indicator
   const renderAiStatus = () => {
+    // If pending/processing for more than 5 minutes, show as failed
+    if (isStale()) {
+      return <span className="text-sm text-[rgba(251,191,36,0.8)]">AI 處理逾時</span>;
+    }
+
     switch (bookmark.aiStatus) {
       case 'PENDING':
       case 'PROCESSING':
@@ -208,8 +272,11 @@ export function BookmarkListCard({
       ));
     }
 
-    // Only show loading if AI is processing and no tags exist yet
-    if (bookmark.aiStatus === 'PENDING' || bookmark.aiStatus === 'PROCESSING') {
+    // Only show loading if AI is processing, not stale, and no tags exist yet
+    if (
+      (bookmark.aiStatus === 'PENDING' || bookmark.aiStatus === 'PROCESSING') &&
+      !isStale()
+    ) {
       return (
         <span className="inline-flex items-center rounded-lg bg-[rgba(136,146,160,0.2)] px-2.5 py-1 text-xs text-[#8892a0]">
           載入中
@@ -217,7 +284,7 @@ export function BookmarkListCard({
       );
     }
 
-    // No tags and AI is done
+    // No tags and AI is done or stale
     return (
       <span className="inline-flex items-center rounded-lg bg-[rgba(136,146,160,0.2)] px-2.5 py-1 text-xs text-[#8892a0]">
         未分類
