@@ -2,18 +2,19 @@
 
 /**
  * Dashboard Sidebar - 側邊欄元件
- * 📐 Figma: 48:1184
+ * 📐 Figma: 48:1184 (48:1356)
  *
- * Design specs:
+ * Design specs from Figma:
  * - Width: 256px
  * - Background: #132337
  * - Border: 1px solid #234567
+ * - Logo: "Clipwise" text only, #00d4ff
+ * - Nav items: 書籤, 搜尋, 標籤, 設定
+ * - No "新增書籤" button (moved to main content header)
  */
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bookmark, Tag, Clock, Star, Settings, LogOut, Plus } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import type { User } from 'next-auth';
 
@@ -21,26 +22,23 @@ interface DashboardSidebarProps {
   user: User;
 }
 
+// Nav items matching Figma design (48:1360-48:1367)
 const navItems = [
   {
-    label: '所有書籤',
+    label: '書籤',
     href: '/bookmarks',
-    icon: Bookmark,
   },
   {
-    label: '最近新增',
-    href: '/bookmarks?sort=recent',
-    icon: Clock,
+    label: '搜尋',
+    href: '/search',
   },
   {
-    label: '我的收藏',
-    href: '/bookmarks?filter=favorite',
-    icon: Star,
-  },
-  {
-    label: '標籤管理',
+    label: '標籤',
     href: '/tags',
-    icon: Tag,
+  },
+  {
+    label: '設定',
+    href: '/settings',
   },
 ];
 
@@ -48,81 +46,52 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="border-border bg-background-alt flex w-64 flex-col border-r">
-      {/* Logo */}
-      <div className="border-border flex h-16 items-center gap-2 border-b px-6">
-        <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-lg">
-          <Bookmark className="text-primary-foreground h-4 w-4" />
-        </div>
-        <span className="font-heading text-foreground text-lg font-bold">Clipwise</span>
+    <aside className="flex w-64 flex-col border-r border-[#234567] bg-[#132337]">
+      {/* Logo - Figma: 48:1358 */}
+      <div className="flex h-[77px] items-center border-b border-[#234567] px-6">
+        <span className="font-['Inter'] text-xl font-bold text-[#00d4ff]">Clipwise</span>
       </div>
 
-      {/* Add Bookmark Button */}
-      <div className="p-4">
-        <Link
-          href="/bookmarks?add=true"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium transition-colors"
-        >
-          <Plus className="h-5 w-5" />
-          新增書籤
-        </Link>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3">
+      {/* Navigation - Figma: 48:1359 */}
+      <nav className="flex-1 space-y-1 px-4 pt-6">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '?');
-          const Icon = item.icon;
 
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                'block rounded-xl px-4 py-3 text-base transition-colors',
                 isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? 'bg-[rgba(0,212,255,0.1)] font-medium text-[#00d4ff]'
+                  : 'font-light text-[#8892a0] hover:bg-[rgba(0,212,255,0.05)] hover:text-[#e8f0f7]'
               )}
             >
-              <Icon className="h-5 w-5" />
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      {/* User Section */}
-      <div className="border-border border-t p-4">
-        <div className="mb-3 flex items-center gap-3">
-          {user.image ? (
-            <img src={user.image} alt={user.name || ''} className="h-8 w-8 rounded-full" />
-          ) : (
-            <div className="bg-muted flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium">
-              {user.name?.charAt(0) || 'U'}
-            </div>
-          )}
-          <div className="flex-1 truncate">
-            <p className="text-foreground truncate text-sm font-medium">{user.name}</p>
-            <p className="text-muted-foreground truncate text-xs">{user.email}</p>
+      {/* User Section - Figma: 48:1368 */}
+      <div className="border-t border-[#234567] px-6 py-4">
+        <div className="flex items-center gap-3">
+          {/* Avatar - Figma: 48:1370 */}
+          <div
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium text-white"
+            style={{
+              backgroundImage:
+                'linear-gradient(135deg, rgba(0, 212, 255, 1) 0%, rgba(19, 78, 74, 1) 100%)',
+            }}
+          >
+            {user.name?.charAt(0) || 'U'}
           </div>
-        </div>
-
-        <div className="space-y-1">
-          <Link
-            href="/settings"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors"
-          >
-            <Settings className="h-4 w-4" />
-            設定
-          </Link>
-          <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            登出
-          </button>
+          {/* User Info - Figma: 48:1372 */}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-[#e8f0f7]">{user.name}</p>
+            <p className="truncate text-xs font-light text-[#8892a0]">{user.email}</p>
+          </div>
         </div>
       </div>
     </aside>

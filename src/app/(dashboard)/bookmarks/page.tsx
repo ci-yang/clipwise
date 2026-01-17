@@ -5,22 +5,18 @@
  * Features:
  * - Server-side initial data fetch
  * - Client-side infinite scroll
- * - Full-text search with highlighting
+ * - Full-text search with highlighting (search in header)
  * - Tag filtering
  */
 
-import { Suspense } from 'react';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { listBookmarks } from '@/services/bookmark.service';
 import { BookmarkInfiniteList } from '@/components/bookmarks/bookmark-infinite-list';
 import { BookmarkInput } from '@/components/bookmarks/bookmark-input';
-import { BookmarkGridSkeleton } from '@/components/bookmarks/bookmark-skeleton';
 import { EmptyState } from '@/components/bookmarks/empty-state';
-import { SearchWrapper } from '@/components/bookmarks/search-wrapper';
 import { SearchResultsCount, NoSearchResults } from '@/components/bookmarks/search-highlight';
 import { TagFilterContainer } from '@/components/bookmarks/tag-filter-container';
-import { Plus } from 'lucide-react';
 
 interface BookmarksPageProps {
   searchParams: Promise<{
@@ -43,36 +39,41 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
   const params = await searchParams;
   const showAddModal = params.add === 'true';
 
+  // Get initial data for header count
+  const initialResult = await listBookmarks({
+    userId: session.user.id,
+    query: params.q,
+    tagId: params.tagId,
+    limit: 20,
+  });
+
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-heading text-foreground text-2xl font-bold">我的書籤</h1>
-          <p className="text-muted-foreground mt-1 text-sm">管理和組織你收藏的連結</p>
+      {/* Page Header - Figma: 48:1201 */}
+      <div className="flex items-center justify-between">
+        {/* Title Section - Figma: 48:1202 */}
+        <div className="flex flex-col gap-1">
+          <h1 className="font-['Noto_Sans_TC'] text-2xl font-bold text-[#e8f0f7]">我的書籤</h1>
+          <p className="text-sm font-normal text-[#8892a0]">共 {initialResult.totalCount} 個書籤</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Search Input */}
-          <SearchWrapper className="w-full sm:w-64" />
-
-          {/* Mobile Add Button */}
-          <BookmarkInput>
-            <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors lg:hidden">
-              <Plus className="h-4 w-4" />
-              新增
-            </button>
-          </BookmarkInput>
-        </div>
+        {/* Add Bookmark Button - Figma: 48:1207 */}
+        <BookmarkInput>
+          <button className="flex items-center rounded-xl bg-[#00d4ff] px-4 py-2.5 text-base font-medium text-[#0a1628] transition-colors hover:bg-[#00d4ff]/90">
+            新增書籤
+          </button>
+        </BookmarkInput>
       </div>
 
-      {/* Tag Filter Bar */}
+      {/* Tag Filter Bar - Figma: 48:1209 */}
       <TagFilterContainer className="scrollbar-hide -mx-4 px-4 sm:-mx-6 sm:px-6" />
 
       {/* Bookmark List with Infinite Scroll */}
-      <Suspense fallback={<BookmarkGridSkeleton />}>
-        <BookmarkListContainer userId={session.user.id} query={params.q} tagId={params.tagId} />
-      </Suspense>
+      <BookmarkListContainerWithData
+        result={initialResult}
+        query={params.q}
+        tagId={params.tagId}
+      />
 
       {/* Add Bookmark Modal (controlled by URL param) */}
       {showAddModal && <BookmarkInput defaultOpen />}
@@ -80,34 +81,33 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
   );
 }
 
-async function BookmarkListContainer({
-  userId,
+// Type for list bookmarks result
+interface ListBookmarksResult {
+  bookmarks: Awaited<ReturnType<typeof listBookmarks>>['bookmarks'];
+  nextCursor: string | null;
+  totalCount: number;
+}
+
+function BookmarkListContainerWithData({
+  result,
   query,
   tagId,
 }: {
-  userId: string;
+  result: ListBookmarksResult;
   query?: string;
   tagId?: string;
 }) {
-  const result = await listBookmarks({
-    userId,
-    query,
-    tagId,
-    limit: 20,
-  });
-
-  // Show empty state for first-time users
+  // Show empty state for first-time users - Figma: 28:608
   if (result.bookmarks.length === 0 && !query && !tagId) {
     return (
-      <div className="border-border bg-background-alt/50 flex flex-col items-center justify-center rounded-2xl border border-dashed py-16">
-        <div className="bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-          <Plus className="text-muted-foreground h-8 w-8" />
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#234567] bg-[rgba(19,35,55,0.5)] py-16">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#132337]">
+          <span className="text-3xl">📚</span>
         </div>
-        <h3 className="text-foreground mb-2 text-lg font-medium">還沒有任何書籤</h3>
-        <p className="text-muted-foreground mb-6 text-sm">貼上連結，AI 將自動產生摘要與標籤</p>
+        <h3 className="mb-2 text-lg font-medium text-[#e8f0f7]">還沒有任何書籤</h3>
+        <p className="mb-6 text-sm text-[#8892a0]">貼上連結，AI 將自動產生摘要與標籤</p>
         <BookmarkInput>
-          <button className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-xl px-6 py-3 font-medium transition-colors">
-            <Plus className="h-5 w-5" />
+          <button className="flex items-center gap-2 rounded-xl bg-[#00d4ff] px-6 py-3 font-medium text-[#0a1628] transition-colors hover:bg-[#00d4ff]/90">
             新增第一個書籤
           </button>
         </BookmarkInput>
@@ -134,7 +134,7 @@ async function BookmarkListContainer({
       {/* Search Results Count */}
       {query && <SearchResultsCount count={result.totalCount} query={query} />}
 
-      {/* Bookmark List */}
+      {/* Bookmark List - Figma: 48:1220 */}
       <BookmarkInfiniteList
         initialBookmarks={result.bookmarks}
         initialCursor={result.nextCursor}
