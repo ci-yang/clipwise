@@ -2,17 +2,17 @@
 
 /**
  * Dashboard Header - 頂部搜尋與操作列
- * 📐 Figma: 48:1190
+ * 📐 Figma: 48:1190 (Desktop), 48:1576 (Mobile)
  *
  * Design specs from Figma:
- * - Background: rgba(19,35,55,0.5) with backdrop-blur
+ * - Desktop: Background rgba(19,35,55,0.5) with backdrop-blur, Search input
+ * - Mobile: Clipwise logo + search icon
  * - Border: 1px solid #234567
- * - Search input: max-w-[608px] bg-[#0a1628] border-[#234567]
- * - User avatar: 36x36 with gradient background
  */
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Search } from 'lucide-react';
 import type { User } from 'next-auth';
 
@@ -37,9 +37,14 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[#234567] bg-[rgba(19,35,55,0.5)] px-8 py-4 backdrop-blur-sm">
-      {/* Search - Figma: 48:1191 */}
-      <form onSubmit={handleSearch} className="w-full max-w-[608px] px-4">
+    <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[#234567] bg-[rgba(19,35,55,0.5)] px-4 py-4 backdrop-blur-sm md:px-8">
+      {/* Mobile: Logo - Figma: 48:1577 */}
+      <Link href="/bookmarks" className="md:hidden">
+        <span className="font-['Inter'] text-lg font-bold text-[#00d4ff]">Clipwise</span>
+      </Link>
+
+      {/* Desktop: Search - Figma: 48:1191 */}
+      <form onSubmit={handleSearch} className="hidden w-full max-w-[608px] px-4 md:block">
         <div className="relative">
           <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-[#8892a0]" />
           <input
@@ -52,9 +57,17 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         </div>
       </form>
 
-      {/* User Avatar - Figma: 48:1198 */}
+      {/* Mobile: Search Icon - Figma: 48:1579 */}
+      <Link
+        href="/search"
+        className="flex h-9 w-9 items-center justify-center rounded-lg text-[#8892a0] transition-colors hover:bg-[#234567]/30 hover:text-[#e8f0f7] md:hidden"
+      >
+        <Search className="h-5 w-5" />
+      </Link>
+
+      {/* Desktop: User Avatar - Figma: 48:1198 */}
       <div
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-medium text-white"
+        className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-medium text-white md:flex"
         style={{
           backgroundImage:
             'linear-gradient(135deg, rgba(0, 212, 255, 1) 0%, rgba(19, 78, 74, 1) 100%)',
