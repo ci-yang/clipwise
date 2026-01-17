@@ -46,7 +46,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-64 flex-col border-r border-[#234567] bg-[#132337]">
+    <aside className="sticky top-0 flex h-screen w-64 flex-col border-r border-[#234567] bg-[#132337]">
       {/* Logo - Figma: 48:1358 */}
       <div className="flex h-[77px] items-center border-b border-[#234567] px-6">
         <span className="font-['Inter'] text-xl font-bold text-[#00d4ff]">Clipwise</span>
