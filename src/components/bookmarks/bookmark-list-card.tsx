@@ -230,7 +230,12 @@ export function BookmarkListCard({
 
   // AI Status indicator
   const renderAiStatus = () => {
-    // If pending/processing for more than 5 minutes, show as failed
+    // If bookmark has tags (user manually added), don't show AI status
+    if (bookmark.tags.length > 0) {
+      return null;
+    }
+
+    // If pending/processing for more than 5 minutes and no tags, show as timeout
     if (isStale()) {
       return <span className="text-sm text-[rgba(251,191,36,0.8)]">AI 處理逾時</span>;
     }
