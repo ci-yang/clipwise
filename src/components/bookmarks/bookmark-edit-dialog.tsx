@@ -23,6 +23,8 @@ interface BookmarkEditDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: (data: { title: string; description: string; tags: string[] }) => Promise<void>;
   onDelete: () => void;
+  /** Called when cancel is clicked - returns to previous view */
+  onCancel?: () => void;
 }
 
 export function BookmarkEditDialog({
@@ -31,6 +33,7 @@ export function BookmarkEditDialog({
   onOpenChange,
   onSave,
   onDelete,
+  onCancel,
 }: BookmarkEditDialogProps) {
   const [title, setTitle] = useState(bookmark.title || '');
   const [description, setDescription] = useState(bookmark.description || bookmark.aiSummary || '');
@@ -197,7 +200,13 @@ export function BookmarkEditDialog({
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                if (onCancel) {
+                  onCancel();
+                } else {
+                  onOpenChange(false);
+                }
+              }}
               className="px-5 py-2.5 font-light text-[#8892a0] hover:text-[#e8f0f7]"
             >
               取消

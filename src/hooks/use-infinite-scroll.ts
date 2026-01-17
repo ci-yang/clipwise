@@ -61,6 +61,14 @@ export function useInfiniteScroll<T>({
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // Reset when initialData changes (e.g., after adding a new bookmark)
+  useEffect(() => {
+    setData(initialData);
+    setCursor(initialCursor);
+    setHasMore(initialCursor !== null);
+    setError(null);
+  }, [initialData, initialCursor]);
+
   // Load more function
   const loadMore = useCallback(async () => {
     if (!cursor || isLoading || !hasMore) return;

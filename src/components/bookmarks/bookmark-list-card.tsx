@@ -66,7 +66,9 @@ const formatRelativeTime = (date: Date | string): string => {
   return target.toLocaleDateString('zh-TW');
 };
 
-export function BookmarkListCard({ bookmark, onUpdate, onDelete }: BookmarkListCardProps) {
+export function BookmarkListCard({ bookmark: initialBookmark, onUpdate, onDelete }: BookmarkListCardProps) {
+  // Local bookmark state for immediate updates
+  const [bookmark, setBookmark] = useState<BookmarkWithTags>(initialBookmark);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -95,19 +97,36 @@ export function BookmarkListCard({ bookmark, onUpdate, onDelete }: BookmarkListC
       }
 
       // Update tags
-      await fetch(`/api/bookmarks/${bookmark.id}/tags`, {
+      const tagsResponse = await fetch(`/api/bookmarks/${bookmark.id}/tags`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tags: data.tags }),
       });
 
+      // Get updated bookmark data
+      await response.json(); // consume the response
+      const tagsResult = tagsResponse.ok ? await tagsResponse.json() : null;
+
+      // Update local bookmark state immediately
+      const updatedBookmark: BookmarkWithTags = {
+        ...bookmark,
+        title: data.title,
+        description: data.description,
+        updatedAt: new Date(),
+        tags: tagsResult?.bookmark?.tags || bookmark.tags,
+      };
+      setBookmark(updatedBookmark);
+
+      // Close edit dialog and re-open view dialog
+      setIsEditOpen(false);
+      setIsViewOpen(true);
+
       // Notify parent
       if (onUpdate) {
-        const result = await response.json();
-        onUpdate(result.bookmark);
+        onUpdate(updatedBookmark);
       }
     },
-    [bookmark.id, onUpdate]
+    [bookmark, onUpdate]
   );
 
   const handleDelete = useCallback(async () => {
@@ -134,6 +153,12 @@ export function BookmarkListCard({ bookmark, onUpdate, onDelete }: BookmarkListC
     setIsMenuOpen(false);
     setIsViewOpen(false);
     setIsEditOpen(true);
+  }, []);
+
+  // Cancel editing and return to view dialog
+  const handleEditCancel = useCallback(() => {
+    setIsEditOpen(false);
+    setIsViewOpen(true);
   }, []);
 
   const openDeleteDialog = useCallback(() => {
@@ -324,6 +349,7 @@ export function BookmarkListCard({ bookmark, onUpdate, onDelete }: BookmarkListC
         onOpenChange={setIsEditOpen}
         onSave={handleSave}
         onDelete={openDeleteDialog}
+        onCancel={handleEditCancel}
       />
 
       {/* Delete Confirm Dialog */}
