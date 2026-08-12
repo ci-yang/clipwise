@@ -70,11 +70,13 @@ async function openPortal(key, subscriptionId) {
       body: { subscriptionId, returnUrl: 'https://example.com/return' },
     }
   )
-  if (status !== 201 || !json?.portalUrl) {
+  // 回應包在 { data: {...} } 裡（實跑 staging 確認）
+  const d = json?.data ?? json
+  if (status !== 201 || !d?.portalUrl) {
     throw new Error(`建 session 失敗 status=${status} body=${JSON.stringify(json)}`)
   }
-  const sessionId = json.portalSessionId ?? json.sessionId
-  const token = new URL(json.portalUrl).searchParams.get('token')
+  const sessionId = d.portalSessionId ?? d.sessionId
+  const token = new URL(d.portalUrl).searchParams.get('token')
   if (!sessionId || !token) throw new Error(`portalUrl 摳不到 sessionId/token: ${json.portalUrl}`)
   return { sessionId, token }
 }
