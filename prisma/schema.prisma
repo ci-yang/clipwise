@@ -28,10 +28,11 @@ model User {
   aiQuotaUsed    Int      @default(0) @map("ai_quota_used")
   aiQuotaResetAt DateTime @default(now()) @map("ai_quota_reset_at")
 
-  accounts  Account[]
-  sessions  Session[]
-  bookmarks Bookmark[]
-  tags      Tag[]
+  accounts      Account[]
+  sessions      Session[]
+  bookmarks     Bookmark[]
+  tags          Tag[]
+  subscriptions Subscription[]
 
   @@map("users")
 }
@@ -155,4 +156,40 @@ model UrlCache {
 
   @@index([cachedAt])
   @@map("url_cache")
+}
+
+// ============================================
+// Portaly Payment testbed（POR-4364 驗證用）
+// ============================================
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  userId               String   @map("user_id")
+  // Portaly 回傳的 checkout session id；此 merchant 認知裡就是 subscription id
+  portalySubscriptionId String  @unique @map("portaly_subscription_id")
+  planId               String   @map("plan_id")
+  status               String   @default("pending") // pending / active / canceled
+  mode                 String   @default("test")     // test / live
+  customerEmail        String   @map("customer_email")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([customerEmail])
+  @@map("subscriptions")
+}
+
+// 收到的 callback 落一張表：分得開「沒送到」與「送到但驗簽掛」
+model CallbackLog {
+  id            String   @id @default(cuid())
+  event         String
+  customerEmail String?  @map("customer_email")
+  signatureOk   Boolean  @map("signature_ok")
+  payload       Json
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([customerEmail])
+  @@map("portaly_callback_logs")
 }
